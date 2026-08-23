@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cloth.sync | Order Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a365d;       
+            --secondary: #e2e8f0;     
+            --accent: #3182ce;        
+            --danger: #e53e3e;
+            --success: #38a169;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+            --bg-body: #f7fafc;
+            --bg-card: #ffffff;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .dashboard-container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--bg-card);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            padding-bottom: 20px;
+        }
+
+        /* Header Branding */
+        .header {
+            background-color: var(--primary);
+            color: white;
+            padding: 20px 15px;
+            text-align: center;
+        }
+        .header h1 { margin: 0; font-size: 24px; font-weight: 800; letter-spacing: 0.5px; }
+        .header p { margin: 5px 0 0 0; font-size: 13px; color: #cbd5e0; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .content { padding: 15px; }
+
+        /* Upload Section */
+        .upload-section {
+            background: #f8fafc; border: 1px solid var(--secondary);
+            padding: 15px; border-radius: 10px; margin-bottom: 20px;
+        }
+        .input-group { margin-bottom: 12px; }
+        .input-label { font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; display: block; }
+        
+        .form-select, .date-input, .text-input {
+            width: 100%; padding: 12px 10px; border: 1px solid var(--secondary); border-radius: 6px;
+            font-size: 15px; font-weight: 600; color: var(--text-main);
+            background: white; outline: none; appearance: none;
+        }
+        .form-select:focus, .date-input:focus, .text-input:focus { border-color: var(--accent); }
+        
+        .new-supplier-box { display: none; margin-top: 10px; }
+
+        .file-upload-wrapper {
+            position: relative; overflow: hidden; display: inline-block; width: 100%; margin-top: 10px;
+        }
+        .file-upload-btn {
+            background: var(--accent); color: white; width: 100%; padding: 14px;
+            border-radius: 8px; text-align: center; font-weight: 700; font-size: 15px; cursor: pointer;
+            box-shadow: 0 4px 6px rgba(49, 130, 206, 0.2); transition: 0.2s;
+        }
+        .file-upload-btn:active { transform: scale(0.98); }
+        .file-upload-wrapper input[type="file"] {
+            font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; height: 100%;
+        }
+
+        /* Tabs & Filters */
+        .tabs { display: flex; gap: 10px; margin-bottom: 15px; }
+        .tab-btn {
+            flex: 1; padding: 12px 10px; text-align: center; font-weight: 700; font-size: 14px;
+            border-radius: 6px; cursor: pointer; border: 1px solid var(--secondary); background: #f8fafc; color: var(--text-main);
+        }
+        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        .filter-wrapper { display: flex; gap: 10px; margin-bottom: 15px; align-items: center; }
+        .filter-select { flex: 1; margin: 0; width: 100%; padding: 10px; border: 1px solid var(--secondary); border-radius: 6px; font-weight: 600; outline: none; }
+        
+        .btn-whatsapp {
+            background: var(--accent); color: white; border: none; padding: 10px 15px;
+            border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 5px;
+        }
+
+        /* Date Header */
+        .date-header {
+            background: var(--secondary); color: var(--primary); padding: 8px 12px;
+            border-radius: 6px; margin: 20px 0 10px 0; font-size: 14px; font-weight: 700;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .date-label-badge { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
+
+        /* Photo Grid */
+        .photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        
+        .photo-card {
+            position: relative; border-radius: 8px; overflow: hidden; border: 1px solid var(--secondary);
+            background: #000; aspect-ratio: 3/4;
+        }
+        .photo-img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0.9; }
+
+        .badge-supplier {
+            position: absolute; top: 5px; left: 5px; background: rgba(26, 54, 93, 0.85); color: white;
+            padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; z-index: 2;
+            max-width: 80%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        /* Action Buttons */
+        .action-bar {
+            position: absolute; bottom: 0; left: 0; width: 100%; padding: 8px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8)); display: flex; gap: 5px; flex-direction: column;
+        }
+        .original-date { color: #cbd5e0; font-size: 10px; text-align: center; margin-bottom: 2px; font-weight: 600; }
+        .btn-status {
+            width: 100%; padding: 8px 6px; border: none; border-radius: 4px; font-size: 12px; font-weight: 700; cursor: pointer;
+        }
+        .btn-receive { background: var(--success); color: white; }
+        .btn-pending { background: #dd6b20; color: white; }
+        
+        .btn-delete {
+            position: absolute; top: 5px; right: 5px; background: rgba(229, 62, 62, 0.9); color: white;
+            border: none; width: 25px; height: 25px; border-radius: 50%; font-size: 12px; font-weight: bold; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; z-index: 2;
+        }
+
+        .empty-state { text-align: center; color: var(--text-muted); font-size: 13px; padding: 20px; background: #f8fafc; border-radius: 8px; border: 1px dashed var(--secondary); }
+
+        /* Footer */
+        .footer {
+            margin-top: 20px; padding: 15px 20px; border-top: 1px solid var(--secondary);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .footer-text { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+        .footer-text span { font-weight: 700; color: var(--primary); }
+        .btn-clear-all {
+            background: transparent; color: var(--danger); border: 1px solid var(--danger);
+            padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; text-transform: uppercase;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        
+        <!-- Updated Branding Header -->
+        <div class="header">
+            <h1>Cloth.sync</h1>
+            <p>Order & Receive Tracker</p>
+        </div>
+
+        <div class="content">
+            
+            <!-- Upload Section with Supplier Logic -->
+            <div class="upload-section">
+                
+                <div class="input-group">
+                    <label class="input-label">Select Supplier (Mandatory)</label>
+                    <select id="supplierSelect" class="form-select" onchange="handleSupplierSelection()">
+                        <option value="">-- Choose Supplier --</option>
+                        <!-- Dynamic suppliers will be injected here -->
+                        <option value="NEW_SUPPLIER">+ Add New Supplier</option>
+                    </select>
+                </div>
+                
+                <!-- Hidden input for typing new supplier name -->
+                <div class="input-group new-supplier-box" id="newSupplierBox">
+                    <input type="text" id="newSupplierInput" class="text-input" placeholder="Type new supplier name...">
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">Order Date</label>
+                    <input type="date" id="orderDate" class="date-input">
+                </div>
+                
+                <div class="file-upload-wrapper">
+                    <div class="file-upload-btn">📸 Add Photos to Pending</div>
+                    <input type="file" id="itemPhoto" accept="image/*" multiple onchange="addPhotos(event)">
+                </div>
+            </div>
+
+            <div class="tabs">
+                <div class="tab-btn active" id="tabPending" onclick="switchTab('pending')">⏳ Pending (<span id="countPending">0</span>)</div>
+                <div class="tab-btn" id="tabReceived" onclick="switchTab('received')">✅ Received (<span id="countReceived">0</span>)</div>
+            </div>
+
+            <div class="filter-wrapper">
+                <select id="supplierFilter" class="filter-select" onchange="loadGallery()">
+                    <option value="ALL">All Suppliers</option>
+                </select>
+                <button class="btn-whatsapp" id="shareBtn" onclick="sharePhotos()">📤 Share</button>
+            </div>
+
+            <div id="galleryContainer">
+                <!-- Data goes here -->
+            </div>
+
+        </div>
+
+        <!-- Updated Footer -->
+        <div class="footer">
+            <div class="footer-text">Developed by <br><span>Smit Babariya</span></div>
+            <button class="btn-clear-all" onclick="clearAllData()">Clear Data</button>
+        </div>
+    </div>
+
+    <script>
+        let currentTab = 'pending';
+        let savedSuppliersList = [];
+
+        // પેજ લોડ થાય ત્યારે ડેટા લાવો
+        window.onload = function() {
+            document.getElementById('orderDate').valueAsDate = new Date();
+            loadSuppliers();
+            loadGallery();
+        };
+
+        function getTodayDateString() {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        // --- Supplier Management Logic ---
+        function loadSuppliers() {
+            // માસ્ટર લિસ્ટ (જો અલગથી સેવ કર્યું હોય) અથવા ડેટાબેઝમાંથી શોધો
+            let checklist = JSON.parse(localStorage.getItem('clothsync_photos')) || [];
+            let allSaved = JSON.parse(localStorage.getItem('clothsync_suppliers')) || [];
+            
+            // જૂના ફોટામાં રહેલા સપ્લાયર્સ પણ લિસ્ટમાં લાવો
+            let activeSuppliers = checklist.map(item => item.supplier);
+            
+            // બધું ભેગું કરીને યુનિક (Unique) લિસ્ટ બનાવો
+            savedSuppliersList = [...new Set([...allSaved, ...activeSuppliers])].filter(s => s && s.trim() !== "");
+            
+            // ડ્રોપડાઉન અપડેટ કરો
+            updateSupplierDropdown();
+            updateSupplierFilterOptions();
+        }
+
+        function updateSupplierDropdown() {
+            const select = document.getElementById('supplierSelect');
+            let html = '<option value="">-- Choose Supplier --</option>';
+            
+            savedSuppliersList.forEach(supp => {
+                html += `<option value="${supp}">${supp}</option>`;
+            });
+            html += '<option value="NEW_SUPPLIER" style="font-weight:bold; color:var(--accent);">+ Add New Supplier</option>';
+            
+            select.innerHTML = html;
+        }
+
+        function handleSupplierSelection() {
+            const select = document.getElementById('supplierSelect');
+            const newBox = document.getElementById('newSupplierBox');
+            const newInput = document.getElementById('newSupplierInput');
+            
+            if (select.value === 'NEW_SUPPLIER') {
+                newBox.style.display = 'block';
+                newInput.focus();
+            } else {
+                newBox.style.display = 'none';
+                newInput.value = '';
+            }
+        }
+        // ---------------------------------
+
+        function addPhotos(event) {
+            const files = event.target.files;
+            const selectedDate = document.getElementById('orderDate').value;
+            const suppSelect = document.getElementById('supplierSelect').value;
+            const suppInput = document.getElementById('newSupplierInput').value.trim();
+            
+            // 1. Mandatory Checks
+            if (!files || files.length === 0) return;
+            
+            if (suppSelect === "") {
+                alert("Please select a Supplier first!");
+                document.getElementById('itemPhoto').value = ""; // ફાઈલ ક્લિયર કરો
+                return;
+            }
+
+            let finalSupplier = suppSelect;
+            
+            if (suppSelect === "NEW_SUPPLIER") {
+                if(suppInput === "") {
+                    alert("Please enter the New Supplier's name!");
+                    document.getElementById('itemPhoto').value = "";
+                    return;
+                }
+                finalSupplier = suppInput;
+                // નવા સપ્લાયરને ડેટાબેઝમાં કાયમ માટે એડ કરો
+                savedSuppliersList.push(finalSupplier);
+                localStorage.setItem('clothsync_suppliers', JSON.stringify([...new Set(savedSuppliersList)]));
+                
+                // ડ્રોપડાઉન રિફ્રેશ કરીને આ નવો સપ્લાયર સિલેક્ટ કરી દો
+                updateSupplierDropdown();
+                document.getElementById('supplierSelect').value = finalSupplier;
+                document.getElementById('newSupplierBox').style.display = 'none';
+            }
+
+            if (!selectedDate) { 
+                alert("Please select Order Date!"); 
+                document.getElementById('itemPhoto').value = "";
+                return; 
+            }
+
+            // 2. Save Data
+            let checklist = JSON.parse(localStorage.getItem('clothsync_photos')) || [];
+
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const newPhoto = {
+                        id: Date.now() + Math.random(),
+                        supplier: finalSupplier,
+                        orderDate: selectedDate,
+                        receivedDate: null,
+                        image: e.target.result,
+                        status: 'pending'
+                    };
+                    checklist.push(newPhoto);
+                    localStorage.setItem('clothsync_photos', JSON.stringify(checklist));
+                    
+                    updateSupplierFilterOptions(); // ફિલ્ટર અપડેટ કરો
+                    loadGallery(); 
+                }
+                reader.readAsDataURL(file);
+            });
+
+            document.getElementById('itemPhoto').value = "";
+        }
+
+        async function sharePhotos() {
+            let filterSelect = document.getElementById('supplierFilter').value;
+            let checklist = JSON.parse(localStorage.getItem('clothsync_photos')) || [];
+            
+            let filteredPhotos = checklist.filter(item => item.status === currentTab);
+            if(filterSelect !== 'ALL') {
+                filteredPhotos = filteredPhotos.filter(item => item.supplier === filterSelect);
+            }
+
+            if (filteredPhotos.length === 0) {
+                alert("No photos to share!");
+                return;
+            }
+
+            const shareBtn = document.getElementById('shareBtn');
+            const originalText = shareBtn.innerText;
+            shareBtn.innerText = "⏳ Preparing...";
+            shareBtn.disabled = true;
+
+            try {
+                let fileArray = [];
+                for (let i = 0; i < filteredPhotos.length; i++) {
+                    let photo = filteredPhotos[i];
+                    const res = await fetch(photo.image);
+                    const blob = await res.blob();
+                    const ext = blob.type.split('/')[1] || 'jpeg';
+                    const fileName = `item_${i+1}_${photo.supplier}.${ext}`;
+                    fileArray.push(new File([blob], fileName, { type: blob.type }));
+                }
+
+                let shareText = currentTab === 'received'
+                    ? `*Cloth.sync Update:* We have received these designs successfully.`
+                    : `*Cloth.sync Update:* These designs are still pending.`;
+
+                if (navigator.canShare && navigator.canShare({ files: fileArray })) {
+                    await navigator.share({ files: fileArray, title: 'Cloth.sync Update', text: shareText });
+                } else {
+                    alert("Sharing not supported on this browser/device.");
+                }
+            } catch (error) {
+                console.log('Error sharing:', error);
+            } finally {
+                shareBtn.innerText = originalText;
+                shareBtn.disabled = false;
+            }
+        }
+
+        function clearAllData() {
+            let confirmClear = confirm("Are you sure? This will delete ALL photos and orders permanently!");
+            if (confirmClear) {
+                localStorage.removeItem('clothsync_photos');
+                localStorage.removeItem('clothsync_suppliers'); // સપ્લાયર્સ પણ ક્લિયર
+                savedSuppliersList = [];
+                updateSupplierDropdown();
+                updateSupplierFilterOptions();
+                loadGallery();
+                alert("All data cleared successfully!");
+            }
+        }
+
+        function changeStatus(id, newStatus) {
+            let checklist = JSON.parse(localStorage.getItem('clothsync_photos')) || [];
+            let itemIndex = checklist.findIndex(item => item.id === id);
+            
+            if (itemIndex !== -1) {
+                checklist[itemIndex].status = newStatus;
+                if(newStatus === 'received') {
+                    checklist[itemIndex].receivedDate = getTodayDateString();
+                } else {
+                    checklist[itemIndex].receivedDate = null; 
+                }
+                localStorage.setItem('clothsync_photos', JSON.stringify(checklist));
+                loadGallery();
+            }
+        }
+
+        function deletePhoto(id) {
+            let confirmDel = confirm("Delete this photo forever?");
+            if (confirmDel) {
+                let checklist = JSON.parse(localStorage.getItem('clothsync_photos')) || [];
+                checklist = checklist.filter(item => item.id !== id);
+                localStorage.setItem('clothsync_photos', JSON.stringify(checklist));
+                loadGallery();
+            }
+        }
+
+        function switchTab(tabName) {
+            currentTab = tabName;
+            document.getElementById('tabPending').classList.remove('active');
+            document.getElementById('tabReceived').classList.remove('active');
+            
+            if(tabName === 'pending') {
+                document.getElementById('tabPending').classList.add('active');
+            } else {
+                document.getElementById('tabReceived').classList.add('active');
+            }
+            loadGallery();
+        }
+
+        function formatDate(dateString) {
+            if(!dateString) return "No Date";
+            const options = { day: '2-digit', month: 'short', year: 'numeric' };
+            return new Date(dateString).toLocaleDateString('en-IN', options);
+        }
+
+        function updateSupplierFilterOptions() {
+            let filterSelect = document.getElementById('supplierFilter');
+            let currentFilter = filterSelect.value || 'ALL';
+            
+            let html = '<option value="ALL">All Suppliers</option>';
+            savedSuppliersList.forEach(supp => {
+                let selected = (supp === currentFilter) ? 'selected' : '';
+                html += `<option value="${supp}" ${selected}>${supp}</option>`;
+            });
+            filterSelect.innerHTML = html;
+        }
+
+        function loadGallery() {
+            const container = document.getElementById('galleryContainer');
+            let checklist = JSON.parse(localStorage.getItem('clothsync_photos')) || [];
+            let filterSelect = document.getElementById('supplierFilter').value;
+
+            let pendingCount = checklist.filter(i => i.status === 'pending').length;
+            let receivedCount = checklist.filter(i => i.status === 'received').length;
+            document.getElementById('countPending').innerText = pendingCount;
+            document.getElementById('countReceived').innerText = receivedCount;
+
+            container.innerHTML = "";
+
+            let displayPhotos = checklist.filter(item => item.status === currentTab);
+            
+            if(filterSelect !== 'ALL') {
+                displayPhotos = displayPhotos.filter(item => item.supplier === filterSelect);
+            }
+
+            if(displayPhotos.length === 0) {
+                container.innerHTML = `<div class="empty-state">No photos found for this selection.</div>`;
+                return;
+            }
+
+            const groupedPhotos = {};
+            displayPhotos.forEach(photo => {
+                let dateKey = (currentTab === 'received' && photo.receivedDate) ? photo.receivedDate : (photo.orderDate || "No Date");
+                if (!groupedPhotos[dateKey]) { groupedPhotos[dateKey] = []; }
+                groupedPhotos[dateKey].push(photo);
+            });
+
+            const sortedDates = Object.keys(groupedPhotos).sort((a, b) => new Date(b) - new Date(a));
+
+            sortedDates.forEach(date => {
+                let displayDate = date === "No Date" ? "Unknown Date" : formatDate(date);
+                let dateLabel = currentTab === 'received' ? "Date Received:" : "Order Date:";
+                
+                container.innerHTML += `
+                    <div class="date-header">
+                        <span>📅 ${displayDate}</span>
+                        <span class="date-label-badge">${dateLabel}</span>
+                    </div>
+                `;
+                
+                let gridHTML = `<div class="photo-grid">`;
+                
+                groupedPhotos[date].slice().reverse().forEach(item => {
+                    let actionBtn = "";
+                    let originalOrdInfo = "";
+                    
+                    if(currentTab === 'pending') {
+                        actionBtn = `<button class="btn-status btn-receive" onclick="changeStatus(${item.id}, 'received')">✅ Mark Received</button>`;
+                    } else {
+                        actionBtn = `<button class="btn-status btn-pending" onclick="changeStatus(${item.id}, 'pending')">⏳ Move to Pending</button>`;
+                        originalOrdInfo = `<div class="original-date">Ord: ${formatDate(item.orderDate)}</div>`;
+                    }
+
+                    gridHTML += `
+                        <div class="photo-card">
+                            <div class="badge-supplier">${item.supplier}</div>
+                            <img src="${item.image}" class="photo-img" alt="Order Photo">
+                            <button class="btn-delete" onclick="deletePhoto(${item.id})">X</button>
+                            <div class="action-bar">
+                                ${originalOrdInfo}
+                                ${actionBtn}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                gridHTML += `</div>`;
+                container.innerHTML += gridHTML;
+            });
+        }
+    </script>
+
+</body>
+</html>
