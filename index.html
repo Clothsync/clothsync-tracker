@@ -38,7 +38,6 @@
             padding-bottom: 20px;
         }
 
-        /* Header Branding */
         .header {
             background-color: var(--primary);
             color: white;
@@ -50,7 +49,6 @@
         
         .content { padding: 15px; }
 
-        /* Upload Section */
         .upload-section {
             background: #f8fafc; border: 1px solid var(--secondary);
             padding: 15px; border-radius: 10px; margin-bottom: 20px;
@@ -80,7 +78,6 @@
             font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; height: 100%;
         }
 
-        /* Tabs & Filters */
         .tabs { display: flex; gap: 10px; margin-bottom: 15px; }
         .tab-btn {
             flex: 1; padding: 12px 10px; text-align: center; font-weight: 700; font-size: 14px;
@@ -96,7 +93,6 @@
             border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 5px;
         }
 
-        /* Date Header */
         .date-header {
             background: var(--secondary); color: var(--primary); padding: 8px 12px;
             border-radius: 6px; margin: 20px 0 10px 0; font-size: 14px; font-weight: 700;
@@ -104,7 +100,6 @@
         }
         .date-label-badge { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
 
-        /* Photo Grid */
         .photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         
         .photo-card {
@@ -119,7 +114,6 @@
             max-width: 80%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
 
-        /* Action Buttons */
         .action-bar {
             position: absolute; bottom: 0; left: 0; width: 100%; padding: 6px;
             background: linear-gradient(transparent, rgba(0,0,0,0.85)); display: flex; gap: 4px; flex-direction: column;
@@ -132,7 +126,7 @@
         }
         .btn-receive { background: var(--success); color: white; }
         .btn-pending { background: #dd6b20; color: white; }
-        .btn-undo { background: #4a5568; color: white; } /* અનડૂ બટન */
+        .btn-undo { background: #4a5568; color: white; }
         
         .btn-delete {
             position: absolute; top: 5px; right: 5px; background: rgba(229, 62, 62, 0.9); color: white;
@@ -142,7 +136,6 @@
 
         .empty-state { text-align: center; color: var(--text-muted); font-size: 13px; padding: 20px; background: #f8fafc; border-radius: 8px; border: 1px dashed var(--secondary); grid-column: span 2; }
 
-        /* Footer */
         .footer {
             margin-top: 20px; padding: 15px 20px; border-top: 1px solid var(--secondary);
             display: flex; justify-content: space-between; align-items: center;
@@ -153,22 +146,19 @@
             background: transparent; color: var(--danger); border: 1px solid var(--danger);
             padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; text-transform: uppercase;
         }
-
     </style>
 </head>
-<body>
 
+
+<body>
     <div class="dashboard-container">
-        
         <div class="header">
             <h1>Cloth.sync</h1>
             <p>Order & Receive Tracker</p>
         </div>
 
         <div class="content">
-            
             <div class="upload-section">
-                
                 <div class="input-group">
                     <label class="input-label">Select Supplier (Mandatory)</label>
                     <select id="supplierSelect" class="form-select" onchange="handleSupplierSelection()">
@@ -204,10 +194,7 @@
                 <button class="btn-whatsapp" id="shareBtn" onclick="sharePhotos()">📤 Share</button>
             </div>
 
-            <div id="galleryContainer" class="photo-grid">
-                <!-- Data goes here -->
-            </div>
-
+            <div id="galleryContainer" class="photo-grid"></div>
         </div>
 
         <div class="footer">
@@ -247,12 +234,10 @@
         function updateSupplierDropdown() {
             const select = document.getElementById('supplierSelect');
             let html = '<option value="">-- Choose Supplier --</option>';
-            
             savedSuppliersList.forEach(supp => {
                 html += `<option value="${supp}">${supp}</option>`;
             });
             html += '<option value="NEW_SUPPLIER" style="font-weight:bold; color:var(--accent);">+ Add New Supplier</option>';
-            
             select.innerHTML = html;
         }
 
@@ -260,7 +245,6 @@
             const select = document.getElementById('supplierSelect');
             const newBox = document.getElementById('newSupplierBox');
             const newInput = document.getElementById('newSupplierInput');
-            
             if (select.value === 'NEW_SUPPLIER') {
                 newBox.style.display = 'block';
                 newInput.focus();
@@ -270,7 +254,6 @@
             }
         }
 
-        // --- પ્રો ફીચર: ઓટો ફોટો કમ્પ્રેશન (Auto-Resize Heavy Photos) ---
         function compressImage(file, callback) {
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -281,35 +264,22 @@
                     const canvas = document.createElement('canvas');
                     let width = img.width;
                     let height = img.height;
-                    
-                    // મહત્તમ સાઈઝ 1000 પિક્સલ લિમિટ રાખીએ જેથી મેમરી ફૂલ ન થાય
                     const MAX_WIDTH = 1000;
                     const MAX_HEIGHT = 1000;
-                    
                     if (width > height) {
-                        if (width > MAX_WIDTH) {
-                            height *= MAX_WIDTH / width;
-                            width = MAX_WIDTH;
-                        }
+                        if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
                     } else {
-                        if (height > MAX_HEIGHT) {
-                            width *= MAX_HEIGHT / height;
-                            height = MAX_HEIGHT;
-                        }
+                        if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
                     }
-                    
                     canvas.width = width;
                     canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
-                    
-                    // 0.7 એટલે 70% ક્વોલિટી, જેથી ફોટો એકદમ લાઈટ થઈ જાય પણ સાફ દેખાય
                     const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
                     callback(compressedDataUrl);
                 }
             }
         }
-        // -------------------------------------------------------------
 
         function addPhotos(event) {
             const files = event.target.files;
@@ -318,7 +288,6 @@
             const suppInput = document.getElementById('newSupplierInput').value.trim();
             
             if (!files || files.length === 0) return;
-            
             if (suppSelect === "") {
                 alert("Please select a Supplier first!");
                 document.getElementById('itemPhoto').value = "";
@@ -362,7 +331,6 @@
                     checklist.push(newPhoto);
                     processedFilesCount++;
 
-                    // બધા ફોટા પ્રોસેસ થઈ જાય પછી સેવ કરો
                     if (processedFilesCount === files.length) {
                         localStorage.setItem('clothsync_photos', JSON.stringify(checklist));
                         updateSupplierFilterOptions();
@@ -370,14 +338,12 @@
                     }
                 });
             });
-
             document.getElementById('itemPhoto').value = "";
         }
 
         async function sharePhotos() {
             let filterSelect = document.getElementById('supplierFilter').value;
             let checklist = JSON.parse(localStorage.getItem('clothsync_photos')) || [];
-            
             let filteredPhotos = checklist.filter(item => item.status === currentTab);
             if(filterSelect !== 'ALL') {
                 filteredPhotos = filteredPhotos.filter(item => item.supplier === filterSelect);
@@ -452,4 +418,117 @@
         function deletePhoto(id) {
             let confirmDel = confirm("Delete this photo forever?");
             if (confirmDel) {
-                let checklist = JSON.parse(localStorage.g
+                let checklist = JSON.parse(localStorage.getItem('clothsync_photos')) || [];
+                checklist = checklist.filter(item => item.id !== id);
+                localStorage.setItem('clothsync_photos', JSON.stringify(checklist));
+                loadGallery();
+            }
+        }
+
+        function switchTab(tabName) {
+            currentTab = tabName;
+            document.getElementById('tabPending').classList.remove('active');
+            document.getElementById('tabReceived').classList.remove('active');
+            
+            if(tabName === 'pending') {
+                document.getElementById('tabPending').classList.add('active');
+            } else {
+                document.getElementById('tabReceived').classList.add('active');
+            }
+            loadGallery();
+        }
+
+        function formatDate(dateString) {
+            if(!dateString) return "No Date";
+            const options = { day: '2-digit', month: 'short', year: 'numeric' };
+            return new Date(dateString).toLocaleDateString('en-IN', options);
+        }
+
+        function updateSupplierFilterOptions() {
+            let filterSelect = document.getElementById('supplierFilter');
+            let currentFilter = filterSelect.value || 'ALL';
+            let html = '<option value="ALL">All Suppliers</option>';
+            savedSuppliersList.forEach(supp => {
+                let selected = (supp === currentFilter) ? 'selected' : '';
+                html += `<option value="${supp}" ${selected}>${supp}</option>`;
+            });
+            filterSelect.innerHTML = html;
+        }
+
+        function loadGallery() {
+            const container = document.getElementById('galleryContainer');
+            let checklist = JSON.parse(localStorage.getItem('clothsync_photos')) || [];
+            let filterSelect = document.getElementById('supplierFilter').value;
+
+            let pendingCount = checklist.filter(i => i.status === 'pending').length;
+            let receivedCount = checklist.filter(i => i.status === 'received').length;
+            document.getElementById('countPending').innerText = pendingCount;
+            document.getElementById('countReceived').innerText = receivedCount;
+
+            container.innerHTML = "";
+
+            let displayPhotos = checklist.filter(item => item.status === currentTab);
+            if(filterSelect !== 'ALL') {
+                displayPhotos = displayPhotos.filter(item => item.supplier === filterSelect);
+            }
+
+            if(displayPhotos.length === 0) {
+                container.innerHTML = `<div class="empty-state">No photos found for this selection.</div>`;
+                return;
+            }
+
+            const groupedPhotos = {};
+            displayPhotos.forEach(photo => {
+                let dateKey = (currentTab === 'received' && photo.receivedDate) ? photo.receivedDate : (photo.orderDate || "No Date");
+                if (!groupedPhotos[dateKey]) { groupedPhotos[dateKey] = []; }
+                groupedPhotos[dateKey].push(photo);
+            });
+
+            const sortedDates = Object.keys(groupedPhotos).sort((a, b) => new Date(b) - new Date(a));
+
+            sortedDates.forEach(date => {
+                let displayDate = date === "No Date" ? "Unknown Date" : formatDate(date);
+                let dateLabel = currentTab === 'received' ? "Date Received:" : "Order Date:";
+                
+                container.innerHTML += `
+                    <div class="date-header" style="grid-column: span 2;">
+                        <span>📅 ${displayDate}</span>
+                        <span class="date-label-badge">${dateLabel}</span>
+                    </div>
+                `;
+                
+                groupedPhotos[date].slice().reverse().forEach(item => {
+                    let actionBtn = "";
+                    let originalOrdInfo = "";
+                    
+                    if(currentTab === 'pending') {
+                        actionBtn = `
+                            <div class="btn-row">
+                                <button class="btn-status btn-receive" onclick="changeStatus(${item.id}, 'received')">✅ Rcv</button>
+                            </div>`;
+                    } else {
+                        actionBtn = `
+                            <div class="btn-row">
+                                <button class="btn-status btn-undo" onclick="changeStatus(${item.id}, 'pending')">↩️ Undo</button>
+                            </div>`;
+                        originalOrdInfo = `<div class="original-date">Ord: ${formatDate(item.orderDate)}</div>`;
+                    }
+
+                    const cardHTML = `
+                        <div class="photo-card">
+                            <div class="badge-supplier">${item.supplier}</div>
+                            <img src="${item.image}" class="photo-img" alt="Order Photo">
+                            <button class="btn-delete" onclick="deletePhoto(${item.id})">X</button>
+                            <div class="action-bar">
+                                ${originalOrdInfo}
+                                ${actionBtn}
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML += cardHTML;
+                });
+            });
+        }
+    </script>
+</body>
+</html>
