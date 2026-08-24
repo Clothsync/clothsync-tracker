@@ -157,7 +157,16 @@
         // --- GitHub Config (કન્ફર્મ કરેલું) ---
         const GITHUB_USER = "Clothsync";
         const REPO_NAME = "clothsync-tracker";
-        const GITHUB_TOKEN = "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";
+        // પેલા ચેક કરો કે LocalStorage માં ટોકન સેવ છે કે નહીં
+let GITHUB_TOKEN = localStorage.getItem('cloth_sync_gh_token');
+
+// જો ટોકન ન હોય, તો બોક્સ ખુલીને યુઝર પાસે માંગશે
+if (!GITHUB_TOKEN) {
+    GITHUB_TOKEN = prompt("કૃપા કરીને તમારો GitHub Personal Access Token અહીં નાખો (આ ફક્ત તમારા બ્રાઉઝરમાં સેવ થશે):");
+    if (GITHUB_TOKEN) {
+        localStorage.setItem('cloth_sync_gh_token', GITHUB_TOKEN.trim());
+    }
+}
 
         // --- Firebase Config ---
         const firebaseConfig = {
