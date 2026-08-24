@@ -157,7 +157,7 @@
         // --- GitHub Config (કન્ફર્મ કરેલું) ---
         const GITHUB_USER = "Clothsync";
         const REPO_NAME = "clothsync-tracker";
-        const GITHUB_TOKEN = "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";
+        const GITHUB_TOKEN = "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";
 
         // --- Firebase Config ---
         const firebaseConfig = {
@@ -253,7 +253,7 @@
                         let recDate = new Date(data.receivedDate);
                         let diffDays = (today - recDate) / (1000 * 60 * 60 * 24);
 
-                        if (diffDays > 50) {
+                        if (diffDays > 0) {
                             itemsToDelete.push({ id: id, path: data.imagePath });
                             return;
                         }
@@ -382,6 +382,13 @@
                     });
 
                     const ghData = await ghResponse.json();
+
+if (!ghResponse.ok) {
+                        alert("GitHub Error: " + (ghData.message || "Bad credentials or permission denied"));
+                        console.error("GitHub Full Error:", ghData);
+                        return;
+                    }
+
                     
                     if(ghResponse.ok) {
                         let downloadURL = ghData.content.download_url;
