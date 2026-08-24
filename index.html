@@ -122,7 +122,7 @@
         
         .btn-row { display: flex; gap: 4px; width: 100%; }
         .btn-status {
-            flex: 1; padding: 6px 2px; border: none; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; text-align: center;
+            flex: 1; padding: 6px 4px; border: none; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; text-align: center;
         }
         .btn-receive { background: var(--success); color: white; }
         .btn-pending { background: #dd6b20; color: white; }
@@ -148,17 +148,19 @@
         }
     </style>
 </head>
-
-
 <body>
+
     <div class="dashboard-container">
+        
         <div class="header">
             <h1>Cloth.sync</h1>
             <p>Order & Receive Tracker</p>
         </div>
 
         <div class="content">
+            
             <div class="upload-section">
+                
                 <div class="input-group">
                     <label class="input-label">Select Supplier (Mandatory)</label>
                     <select id="supplierSelect" class="form-select" onchange="handleSupplierSelection()">
@@ -177,7 +179,7 @@
                 </div>
                 
                 <div class="file-upload-wrapper">
-                    <div class="file-upload-btn">📸 Add Photos to Pending</div>
+                    <div class="file-upload-btn" id="uploadBtnText">📸 Add Photos to Pending</div>
                     <input type="file" id="itemPhoto" accept="image/*" multiple onchange="addPhotos(event)">
                 </div>
             </div>
@@ -195,6 +197,7 @@
             </div>
 
             <div id="galleryContainer" class="photo-grid"></div>
+
         </div>
 
         <div class="footer">
@@ -254,40 +257,53 @@
             }
         }
 
-        function compressImage(file, callback) {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = function(event) {
-                const img = new Image();
-                img.src = event.target.result;
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    let width = img.width;
-                    let height = img.height;
-                    const MAX_WIDTH = 1000;
-                    const MAX_HEIGHT = 1000;
-                    if (width > height) {
-                        if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
-                    } else {
-                        if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
-                    }
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
-                    callback(compressedDataUrl);
-                }
-            }
+        function compressImage(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        
+                        const MAX_WIDTH = 900;
+                        const MAX_HEIGHT = 900;
+                        
+                        if (width > height) {
+                            if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                        } else {
+                            if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+                        }
+                        
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.65);
+                        resolve(compressedDataUrl);
+                    };
+                    img.onerror = function() {
+                        resolve(event.target.result);
+                    };
+                };
+                reader.onerror = function() {
+                    resolve(null);
+                };
+                reader.readAsDataURL(file);
+            });
         }
 
-        function addPhotos(event) {
+        async function addPhotos(event) {
             const files = event.target.files;
             const selectedDate = document.getElementById('orderDate').value;
             const suppSelect = document.getElementById('supplierSelect').value;
             const suppInput = document.getElementById('newSupplierInput').value.trim();
             
             if (!files || files.length === 0) return;
+            
             if (suppSelect === "") {
                 alert("Please select a Supplier first!");
                 document.getElementById('itemPhoto').value = "";
@@ -302,8 +318,10 @@
                     return;
                 }
                 finalSupplier = suppInput;
-                savedSuppliersList.push(finalSupplier);
-                localStorage.setItem('clothsync_suppliers', JSON.stringify([...new Set(savedSuppliersList)]));
+                if (!savedSuppliersList.includes(finalSupplier)) {
+                    savedSuppliersList.push(finalSupplier);
+                    localStorage.setItem('clothsync_suppliers', JSON.stringify(savedSuppliersList));
+                }
                 updateSupplierDropdown();
                 document.getElementById('supplierSelect').value = finalSupplier;
                 document.getElementById('newSupplierBox').style.display = 'none';
@@ -315,11 +333,14 @@
                 return; 
             }
 
-            let checklist = JSON.parse(localStorage.getItem('clothsync_photos')) || [];
-            let processedFilesCount = 0;
+            const btnText = document.getElementById('uploadBtnText');
+            btnText.innerText = "⏳ Processing Photos...";
 
-            Array.from(files).forEach(file => {
-                compressImage(file, function(compressedBase64) {
+            let checklist = JSON.parse(localStorage.getItem('clothsync_photos')) || [];
+
+            for (let i = 0; i < files.length; i++) {
+                let compressedBase64 = await compressImage(files[i]);
+                if (compressedBase64) {
                     const newPhoto = {
                         id: Date.now() + Math.random(),
                         supplier: finalSupplier,
@@ -329,15 +350,14 @@
                         status: 'pending'
                     };
                     checklist.push(newPhoto);
-                    processedFilesCount++;
+                }
+            }
 
-                    if (processedFilesCount === files.length) {
-                        localStorage.setItem('clothsync_photos', JSON.stringify(checklist));
-                        updateSupplierFilterOptions();
-                        loadGallery();
-                    }
-                });
-            });
+            localStorage.setItem('clothsync_photos', JSON.stringify(checklist));
+            updateSupplierFilterOptions();
+            loadGallery();
+
+            btnText.innerText = "📸 Add Photos to Pending";
             document.getElementById('itemPhoto').value = "";
         }
 
@@ -502,14 +522,16 @@
                     let originalOrdInfo = "";
                     
                     if(currentTab === 'pending') {
+                        // અહીં ફેરફાર કર્યો છે: Mark as Received
                         actionBtn = `
                             <div class="btn-row">
-                                <button class="btn-status btn-receive" onclick="changeStatus(${item.id}, 'received')">✅ Rcv</button>
+                                <button class="btn-status btn-receive" onclick="changeStatus(${item.id}, 'received')">✅ Mark as Received</button>
                             </div>`;
                     } else {
+                        // અહીં ફેરફાર કર્યો છે: Move to Pending
                         actionBtn = `
                             <div class="btn-row">
-                                <button class="btn-status btn-undo" onclick="changeStatus(${item.id}, 'pending')">↩️ Undo</button>
+                                <button class="btn-status btn-undo" onclick="changeStatus(${item.id}, 'pending')">⏳ Move to Pending</button>
                             </div>`;
                         originalOrdInfo = `<div class="original-date">Ord: ${formatDate(item.orderDate)}</div>`;
                     }
