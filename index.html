@@ -21,146 +21,91 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
 
         body {
-            background-color: var(--bg-body);
-            color: var(--text-main);
-            padding: 10px;
-            display: flex;
-            justify-content: center;
+            background-color: var(--bg-body); color: var(--text-main);
+            padding: 10px; display: flex; justify-content: center;
         }
 
         .dashboard-container {
-            width: 100%;
-            max-width: 500px;
-            background: var(--bg-card);
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-            overflow: hidden;
-            padding-bottom: 20px;
+            width: 100%; max-width: 500px; background: var(--bg-card);
+            border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); overflow: hidden; padding-bottom: 20px;
         }
 
-        .header {
-            background-color: var(--primary);
-            color: white;
-            padding: 20px 15px;
-            text-align: center;
-        }
+        .header { background-color: var(--primary); color: white; padding: 20px 15px; text-align: center; }
         .header h1 { margin: 0; font-size: 24px; font-weight: 800; letter-spacing: 0.5px; }
         .header p { margin: 5px 0 0 0; font-size: 13px; color: #cbd5e0; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
-        
+        .cloud-badge { display: inline-block; background: #ecc94b; color: #744210; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 12px; margin-top: 8px; letter-spacing: 0.5px; }
+
         .content { padding: 15px; }
 
-        .upload-section {
-            background: #f8fafc; border: 1px solid var(--secondary);
-            padding: 15px; border-radius: 10px; margin-bottom: 20px;
-        }
+        .upload-section { background: #f8fafc; border: 1px solid var(--secondary); padding: 15px; border-radius: 10px; margin-bottom: 20px; }
         .input-group { margin-bottom: 12px; }
         .input-label { font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; display: block; }
         
         .form-select, .date-input, .text-input {
             width: 100%; padding: 12px 10px; border: 1px solid var(--secondary); border-radius: 6px;
-            font-size: 15px; font-weight: 600; color: var(--text-main);
-            background: white; outline: none; appearance: none;
+            font-size: 15px; font-weight: 600; color: var(--text-main); background: white; outline: none; appearance: none;
         }
         .form-select:focus, .date-input:focus, .text-input:focus { border-color: var(--accent); }
         
         .new-supplier-box { display: none; margin-top: 10px; }
 
-        .file-upload-wrapper {
-            position: relative; overflow: hidden; display: inline-block; width: 100%; margin-top: 10px;
-        }
+        .file-upload-wrapper { position: relative; overflow: hidden; display: inline-block; width: 100%; margin-top: 10px; }
         .file-upload-btn {
-            background: var(--accent); color: white; width: 100%; padding: 14px;
-            border-radius: 8px; text-align: center; font-weight: 700; font-size: 15px; cursor: pointer;
-            box-shadow: 0 4px 6px rgba(49, 130, 206, 0.2); transition: 0.2s;
+            background: var(--accent); color: white; width: 100%; padding: 14px; border-radius: 8px; text-align: center; font-weight: 700; font-size: 15px; cursor: pointer; box-shadow: 0 4px 6px rgba(49, 130, 206, 0.2); transition: 0.2s;
         }
         .file-upload-btn:active { transform: scale(0.98); }
-        .file-upload-wrapper input[type="file"] {
-            font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; height: 100%;
-        }
+        .file-upload-wrapper input[type="file"] { font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; height: 100%; }
 
         .tabs { display: flex; gap: 10px; margin-bottom: 15px; }
-        .tab-btn {
-            flex: 1; padding: 12px 10px; text-align: center; font-weight: 700; font-size: 14px;
-            border-radius: 6px; cursor: pointer; border: 1px solid var(--secondary); background: #f8fafc; color: var(--text-main);
-        }
+        .tab-btn { flex: 1; padding: 12px 10px; text-align: center; font-weight: 700; font-size: 14px; border-radius: 6px; cursor: pointer; border: 1px solid var(--secondary); background: #f8fafc; color: var(--text-main); }
         .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
         .filter-wrapper { display: flex; gap: 10px; margin-bottom: 15px; align-items: center; }
         .filter-select { flex: 1; margin: 0; width: 100%; padding: 10px; border: 1px solid var(--secondary); border-radius: 6px; font-weight: 600; outline: none; }
         
-        .btn-whatsapp {
-            background: var(--accent); color: white; border: none; padding: 10px 15px;
-            border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 5px;
-        }
+        .btn-whatsapp { background: var(--accent); color: white; border: none; padding: 10px 15px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
 
-        .date-header {
-            background: var(--secondary); color: var(--primary); padding: 8px 12px;
-            border-radius: 6px; margin: 20px 0 10px 0; font-size: 14px; font-weight: 700;
-            display: flex; justify-content: space-between; align-items: center;
-        }
+        .date-header { background: var(--secondary); color: var(--primary); padding: 8px 12px; border-radius: 6px; margin: 20px 0 10px 0; font-size: 14px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
         .date-label-badge { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
 
         .photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         
-        .photo-card {
-            position: relative; border-radius: 8px; overflow: hidden; border: 1px solid var(--secondary);
-            background: #000; aspect-ratio: 3/4;
-        }
+        .photo-card { position: relative; border-radius: 8px; overflow: hidden; border: 1px solid var(--secondary); background: #000; aspect-ratio: 3/4; }
         .photo-img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0.9; }
+        .badge-supplier { position: absolute; top: 5px; left: 5px; background: rgba(26, 54, 93, 0.85); color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; z-index: 2; max-width: 80%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        .badge-supplier {
-            position: absolute; top: 5px; left: 5px; background: rgba(26, 54, 93, 0.85); color: white;
-            padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; z-index: 2;
-            max-width: 80%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-
-        .action-bar {
-            position: absolute; bottom: 0; left: 0; width: 100%; padding: 6px;
-            background: linear-gradient(transparent, rgba(0,0,0,0.85)); display: flex; gap: 4px; flex-direction: column;
-        }
+        .action-bar { position: absolute; bottom: 0; left: 0; width: 100%; padding: 6px; background: linear-gradient(transparent, rgba(0,0,0,0.85)); display: flex; gap: 4px; flex-direction: column; }
         .original-date { color: #cbd5e0; font-size: 10px; text-align: center; margin-bottom: 1px; font-weight: 600; }
         
         .btn-row { display: flex; gap: 4px; width: 100%; }
-        .btn-status {
-            flex: 1; padding: 6px 4px; border: none; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; text-align: center;
-        }
+        .btn-status { flex: 1; padding: 6px 4px; border: none; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; text-align: center; }
         .btn-receive { background: var(--success); color: white; }
-        .btn-pending { background: #dd6b20; color: white; }
         .btn-undo { background: #4a5568; color: white; }
         
-        .btn-delete {
-            position: absolute; top: 5px; right: 5px; background: rgba(229, 62, 62, 0.9); color: white;
-            border: none; width: 25px; height: 25px; border-radius: 50%; font-size: 12px; font-weight: bold; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; z-index: 2;
-        }
+        .btn-delete { position: absolute; top: 5px; right: 5px; background: rgba(229, 62, 62, 0.9); color: white; border: none; width: 25px; height: 25px; border-radius: 50%; font-size: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 2; }
 
         .empty-state { text-align: center; color: var(--text-muted); font-size: 13px; padding: 20px; background: #f8fafc; border-radius: 8px; border: 1px dashed var(--secondary); grid-column: span 2; }
 
-        .footer {
-            margin-top: 20px; padding: 15px 20px; border-top: 1px solid var(--secondary);
-            display: flex; justify-content: space-between; align-items: center;
-        }
+        .footer { margin-top: 20px; padding: 15px 20px; border-top: 1px solid var(--secondary); display: flex; justify-content: space-between; align-items: center; }
         .footer-text { font-size: 12px; color: var(--text-muted); font-weight: 500; }
         .footer-text span { font-weight: 700; color: var(--primary); }
-        .btn-clear-all {
-            background: transparent; color: var(--danger); border: 1px solid var(--danger);
-            padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; text-transform: uppercase;
-        }
+
+        #loaderOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.85); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; display: none; font-weight: 700; color: var(--primary); font-size: 18px; }
     </style>
 </head>
 <body>
 
+    <div id="loaderOverlay">⏳ Syncing with GitHub Cloud...</div>
+
     <div class="dashboard-container">
-        
         <div class="header">
             <h1>Cloth.sync</h1>
             <p>Order & Receive Tracker</p>
+            <div class="cloud-badge">☁️ GITHUB AUTO-CLEAN (60 DAYS)</div>
         </div>
 
         <div class="content">
-            
             <div class="upload-section">
-                
                 <div class="input-group">
                     <label class="input-label">Select Supplier (Mandatory)</label>
                     <select id="supplierSelect" class="form-select" onchange="handleSupplierSelection()">
@@ -190,278 +135,160 @@
             </div>
 
             <div class="filter-wrapper">
-                <select id="supplierFilter" class="filter-select" onchange="loadGallery()">
+                <select id="supplierFilter" class="filter-select" onchange="renderGallery()">
                     <option value="ALL">All Suppliers</option>
                 </select>
                 <button class="btn-whatsapp" id="shareBtn" onclick="sharePhotos()">📤 Share</button>
             </div>
 
             <div id="galleryContainer" class="photo-grid"></div>
-
         </div>
 
         <div class="footer">
             <div class="footer-text">Developed by <br><span>Smit Babariya</span></div>
-            <button class="btn-clear-all" onclick="clearAllData()">Clear Data</button>
         </div>
     </div>
 
-    <script>
-        let currentTab = 'pending';
-        let savedSuppliersList = [];
+    <!-- Firebase + GitHub API Integration SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        window.onload = function() {
-            document.getElementById('orderDate').valueAsDate = new Date();
-            loadSuppliers();
-            loadGallery();
+        // --- GitHub Config (કન્ફર્મ કરેલું) ---
+        const GITHUB_USER = "Clothsync";
+        const REPO_NAME = "clothsync-tracker";
+        const GITHUB_TOKEN = "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";
+
+        // --- Firebase Config ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBLe_HEFq_pGZ-vlTOhYhZ6O818vVAanSk",
+            authDomain: "cloth-sync.firebaseapp.com",
+            projectId: "cloth-sync",
+            storageBucket: "cloth-sync.firebasestorage.app",
+            messagingSenderId: "346627401157",
+            appId: "1:346627401157:web:9f058d28c360fd2e9b97ac",
+            measurementId: "G-6DMDEZRDS1"
         };
 
-        function getTodayDateString() {
-            const today = new Date();
-            const yyyy = today.getFullYear();
-            const mm = String(today.getMonth() + 1).padStart(2, '0');
-            const dd = String(today.getDate()).padStart(2, '0');
-            return `${yyyy}-${mm}-${dd}`;
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let currentTab = 'pending';
+        let savedSuppliersList = [];
+        let allCloudPhotos = [];
+
+        window.switchTab = function(tabName) {
+            currentTab = tabName;
+            document.getElementById('tabPending').classList.remove('active');
+            document.getElementById('tabReceived').classList.remove('active');
+            if(tabName === 'pending') document.getElementById('tabPending').classList.add('active');
+            else document.getElementById('tabReceived').classList.add('active');
+            renderGallery();
+        };
+
+        window.handleSupplierSelection = function() {
+            const select = document.getElementById('supplierSelect');
+            const newBox = document.getElementById('newSupplierBox');
+            if (select.value === 'NEW_SUPPLIER') {
+                newBox.style.display = 'block';
+                document.getElementById('newSupplierInput').focus();
+            } else {
+                newBox.style.display = 'none';
+                document.getElementById('newSupplierInput').value = '';
+            }
+        };
+
+        function showLoader(show) {
+            document.getElementById('loaderOverlay').style.display = show ? 'flex' : 'none';
         }
 
-        function loadSuppliers() {
-            let checklist = JSON.parse(localStorage.getItem('clothsync_photos')) || [];
-            let allSaved = JSON.parse(localStorage.getItem('clothsync_suppliers')) || [];
-            let activeSuppliers = checklist.map(item => item.supplier);
-            
-            savedSuppliersList = [...new Set([...allSaved, ...activeSuppliers])].filter(s => s && s.trim() !== "");
-            updateSupplierDropdown();
-            updateSupplierFilterOptions();
+        window.onload = async function() {
+            document.getElementById('orderDate').valueAsDate = new Date();
+            await fetchCloudData();
+        };
+
+        // GitHub પરથી ફોટો પરમેનન્ટ ડિલીટ કરવાનું ફંક્શન
+        async function deletePhotoFromGitHub(imagePath) {
+            if (!imagePath) return;
+            try {
+                const getRes = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${REPO_NAME}/contents/${imagePath}`, {
+                    headers: { "Authorization": `token ${GITHUB_TOKEN}` }
+                });
+                if (getRes.ok) {
+                    const fileData = await getRes.json();
+                    await fetch(`https://api.github.com/repos/${GITHUB_USER}/${REPO_NAME}/contents/${imagePath}`, {
+                        method: "DELETE",
+                        headers: {
+                            "Authorization": `token ${GITHUB_TOKEN}`,
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            message: "Auto-clean 60 days delete",
+                            sha: fileData.sha
+                        })
+                    });
+                }
+            } catch (e) {
+                console.error("GitHub Delete Error:", e);
+            }
+        }
+
+        async function fetchCloudData() {
+            showLoader(true);
+            try {
+                const q = query(collection(db, "orders"));
+                const querySnapshot = await getDocs(q);
+                allCloudPhotos = [];
+                let tempSuppliers = JSON.parse(localStorage.getItem('clothsync_suppliers')) || [];
+                
+                let today = new Date();
+                let itemsToDelete = [];
+
+                querySnapshot.forEach((docSnap) => {
+                    let data = docSnap.data();
+                    let id = docSnap.id;
+
+                    // 60 દિવસ જૂના Received ઓર્ડર ઓટો-ક્લીન લોજિક
+                    if (data.status === 'received' && data.receivedDate) {
+                        let recDate = new Date(data.receivedDate);
+                        let diffDays = (today - recDate) / (1000 * 60 * 60 * 24);
+
+                        if (diffDays > 0) {
+                            itemsToDelete.push({ id: id, path: data.imagePath });
+                            return;
+                        }
+                    }
+
+                    allCloudPhotos.push({ id: id, ...data });
+                    if(data.supplier && !tempSuppliers.includes(data.supplier)) {
+                        tempSuppliers.push(data.supplier);
+                    }
+                });
+
+                // ફાયરબેઝ અને GitHub બંનેમાંથી એકસાથે ક્લીન કરો
+                for (let item of itemsToDelete) {
+                    await deletePhotoFromGitHub(item.path);
+                    await deleteDoc(doc(db, "orders", item.id));
+                }
+
+                savedSuppliersList = [...new Set(tempSuppliers)].filter(s => s && s.trim() !== "");
+                localStorage.setItem('clothsync_suppliers', JSON.stringify(savedSuppliersList));
+                
+                updateSupplierDropdown();
+                updateSupplierFilterOptions();
+                renderGallery();
+            } catch (error) {
+                console.error("Fetch/Clean Error: ", error);
+            }
+            showLoader(false);
         }
 
         function updateSupplierDropdown() {
             const select = document.getElementById('supplierSelect');
             let html = '<option value="">-- Choose Supplier --</option>';
-            savedSuppliersList.forEach(supp => {
-                html += `<option value="${supp}">${supp}</option>`;
-            });
+            savedSuppliersList.forEach(supp => { html += `<option value="${supp}">${supp}</option>`; });
             html += '<option value="NEW_SUPPLIER" style="font-weight:bold; color:var(--accent);">+ Add New Supplier</option>';
             select.innerHTML = html;
-        }
-
-        function handleSupplierSelection() {
-            const select = document.getElementById('supplierSelect');
-            const newBox = document.getElementById('newSupplierBox');
-            const newInput = document.getElementById('newSupplierInput');
-            if (select.value === 'NEW_SUPPLIER') {
-                newBox.style.display = 'block';
-                newInput.focus();
-            } else {
-                newBox.style.display = 'none';
-                newInput.value = '';
-            }
-        }
-
-        function compressImage(file) {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const img = new Image();
-                    img.src = event.target.result;
-                    img.onload = function() {
-                        const canvas = document.createElement('canvas');
-                        let width = img.width;
-                        let height = img.height;
-                        
-                        const MAX_WIDTH = 900;
-                        const MAX_HEIGHT = 900;
-                        
-                        if (width > height) {
-                            if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
-                        } else {
-                            if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
-                        }
-                        
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        
-                        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.65);
-                        resolve(compressedDataUrl);
-                    };
-                    img.onerror = function() {
-                        resolve(event.target.result);
-                    };
-                };
-                reader.onerror = function() {
-                    resolve(null);
-                };
-                reader.readAsDataURL(file);
-            });
-        }
-
-        async function addPhotos(event) {
-            const files = event.target.files;
-            const selectedDate = document.getElementById('orderDate').value;
-            const suppSelect = document.getElementById('supplierSelect').value;
-            const suppInput = document.getElementById('newSupplierInput').value.trim();
-            
-            if (!files || files.length === 0) return;
-            
-            if (suppSelect === "") {
-                alert("Please select a Supplier first!");
-                document.getElementById('itemPhoto').value = "";
-                return;
-            }
-
-            let finalSupplier = suppSelect;
-            if (suppSelect === "NEW_SUPPLIER") {
-                if(suppInput === "") {
-                    alert("Please enter the New Supplier's name!");
-                    document.getElementById('itemPhoto').value = "";
-                    return;
-                }
-                finalSupplier = suppInput;
-                if (!savedSuppliersList.includes(finalSupplier)) {
-                    savedSuppliersList.push(finalSupplier);
-                    localStorage.setItem('clothsync_suppliers', JSON.stringify(savedSuppliersList));
-                }
-                updateSupplierDropdown();
-                document.getElementById('supplierSelect').value = finalSupplier;
-                document.getElementById('newSupplierBox').style.display = 'none';
-            }
-
-            if (!selectedDate) { 
-                alert("Please select Order Date!"); 
-                document.getElementById('itemPhoto').value = "";
-                return; 
-            }
-
-            const btnText = document.getElementById('uploadBtnText');
-            btnText.innerText = "⏳ Processing Photos...";
-
-            let checklist = JSON.parse(localStorage.getItem('clothsync_photos')) || [];
-
-            for (let i = 0; i < files.length; i++) {
-                let compressedBase64 = await compressImage(files[i]);
-                if (compressedBase64) {
-                    const newPhoto = {
-                        id: Date.now() + Math.random(),
-                        supplier: finalSupplier,
-                        orderDate: selectedDate,
-                        receivedDate: null,
-                        image: compressedBase64,
-                        status: 'pending'
-                    };
-                    checklist.push(newPhoto);
-                }
-            }
-
-            localStorage.setItem('clothsync_photos', JSON.stringify(checklist));
-            updateSupplierFilterOptions();
-            loadGallery();
-
-            btnText.innerText = "📸 Add Photos to Pending";
-            document.getElementById('itemPhoto').value = "";
-        }
-
-        async function sharePhotos() {
-            let filterSelect = document.getElementById('supplierFilter').value;
-            let checklist = JSON.parse(localStorage.getItem('clothsync_photos')) || [];
-            let filteredPhotos = checklist.filter(item => item.status === currentTab);
-            if(filterSelect !== 'ALL') {
-                filteredPhotos = filteredPhotos.filter(item => item.supplier === filterSelect);
-            }
-
-            if (filteredPhotos.length === 0) {
-                alert("No photos to share!");
-                return;
-            }
-
-            const shareBtn = document.getElementById('shareBtn');
-            const originalText = shareBtn.innerText;
-            shareBtn.innerText = "⏳ Preparing...";
-            shareBtn.disabled = true;
-
-            try {
-                let fileArray = [];
-                for (let i = 0; i < filteredPhotos.length; i++) {
-                    let photo = filteredPhotos[i];
-                    const res = await fetch(photo.image);
-                    const blob = await res.blob();
-                    const fileName = `item_${i+1}_${photo.supplier}.jpeg`;
-                    fileArray.push(new File([blob], fileName, { type: 'image/jpeg' }));
-                }
-
-                let shareText = currentTab === 'received'
-                    ? `*Cloth.sync Update:* We have received these designs successfully.`
-                    : `*Cloth.sync Update:* These designs are still pending.`;
-
-                if (navigator.canShare && navigator.canShare({ files: fileArray })) {
-                    await navigator.share({ files: fileArray, title: 'Cloth.sync Update', text: shareText });
-                } else {
-                    alert("Sharing not supported on this browser/device.");
-                }
-            } catch (error) {
-                console.log('Error sharing:', error);
-            } finally {
-                shareBtn.innerText = originalText;
-                shareBtn.disabled = false;
-            }
-        }
-
-        function clearAllData() {
-            let confirmClear = confirm("Are you sure? This will delete ALL photos and orders permanently!");
-            if (confirmClear) {
-                localStorage.removeItem('clothsync_photos');
-                localStorage.removeItem('clothsync_suppliers');
-                savedSuppliersList = [];
-                updateSupplierDropdown();
-                updateSupplierFilterOptions();
-                loadGallery();
-                alert("All data cleared successfully!");
-            }
-        }
-
-        function changeStatus(id, newStatus) {
-            let checklist = JSON.parse(localStorage.getItem('clothsync_photos')) || [];
-            let itemIndex = checklist.findIndex(item => item.id === id);
-            
-            if (itemIndex !== -1) {
-                checklist[itemIndex].status = newStatus;
-                if(newStatus === 'received') {
-                    checklist[itemIndex].receivedDate = getTodayDateString();
-                } else {
-                    checklist[itemIndex].receivedDate = null; 
-                }
-                localStorage.setItem('clothsync_photos', JSON.stringify(checklist));
-                loadGallery();
-            }
-        }
-
-        function deletePhoto(id) {
-            let confirmDel = confirm("Delete this photo forever?");
-            if (confirmDel) {
-                let checklist = JSON.parse(localStorage.getItem('clothsync_photos')) || [];
-                checklist = checklist.filter(item => item.id !== id);
-                localStorage.setItem('clothsync_photos', JSON.stringify(checklist));
-                loadGallery();
-            }
-        }
-
-        function switchTab(tabName) {
-            currentTab = tabName;
-            document.getElementById('tabPending').classList.remove('active');
-            document.getElementById('tabReceived').classList.remove('active');
-            
-            if(tabName === 'pending') {
-                document.getElementById('tabPending').classList.add('active');
-            } else {
-                document.getElementById('tabReceived').classList.add('active');
-            }
-            loadGallery();
-        }
-
-        function formatDate(dateString) {
-            if(!dateString) return "No Date";
-            const options = { day: '2-digit', month: 'short', year: 'numeric' };
-            return new Date(dateString).toLocaleDateString('en-IN', options);
         }
 
         function updateSupplierFilterOptions() {
@@ -475,19 +302,169 @@
             filterSelect.innerHTML = html;
         }
 
-        function loadGallery() {
+        function getTodayDateString() {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        function compressImage(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width; let height = img.height;
+                        const MAX_WIDTH = 800; const MAX_HEIGHT = 800;
+                        if (width > height) { if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } } 
+                        else { if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; } }
+                        canvas.width = width; canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/jpeg', 0.6));
+                    };
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // GitHub પર ફોટો અપલોડ કરવાનું ફંક્શન
+        window.addPhotos = async function(event) {
+            const files = event.target.files;
+            const selectedDate = document.getElementById('orderDate').value;
+            const suppSelect = document.getElementById('supplierSelect').value;
+            const suppInput = document.getElementById('newSupplierInput').value.trim();
+            const btnText = document.getElementById('uploadBtnText');
+            
+            if (!files || files.length === 0) return;
+            if (suppSelect === "") { alert("Please select a Supplier first!"); return; }
+
+            let finalSupplier = suppSelect;
+            if (suppSelect === "NEW_SUPPLIER") {
+                if(suppInput === "") { alert("Please enter New Supplier name!"); return; }
+                finalSupplier = suppInput;
+                if (!savedSuppliersList.includes(finalSupplier)) {
+                    savedSuppliersList.push(finalSupplier);
+                    localStorage.setItem('clothsync_suppliers', JSON.stringify(savedSuppliersList));
+                    updateSupplierDropdown();
+                }
+                document.getElementById('supplierSelect').value = finalSupplier;
+                document.getElementById('newSupplierBox').style.display = 'none';
+            }
+
+            if (!selectedDate) { alert("Select Order Date!"); return; }
+
+            btnText.innerText = `⏳ Uploading to GitHub (0/${files.length})...`;
+            
+            try {
+                for (let i = 0; i < files.length; i++) {
+                    btnText.innerText = `⏳ Uploading (${i+1}/${files.length})...`;
+                    let base64Full = await compressImage(files[i]);
+                    let base64Data = base64Full.split(',')[1];
+
+                    let fileName = `uploads/img_${Date.now()}_${Math.floor(Math.random()*1000)}.jpg`;
+                    
+                    // GitHub API Request
+                    const ghResponse = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${REPO_NAME}/contents/${fileName}`, {
+                        method: "PUT",
+                        headers: {
+                            "Authorization": `token ${GITHUB_TOKEN}`,
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            message: "Upload order photo via Cloth.sync",
+                            content: base64Data
+                        })
+                    });
+
+                    const ghData = await ghResponse.json();
+                    
+                    if(ghResponse.ok) {
+                        let downloadURL = ghData.content.download_url;
+
+                        const docRef = await addDoc(collection(db, "orders"), {
+                            supplier: finalSupplier,
+                            orderDate: selectedDate,
+                            receivedDate: null,
+                            imageURL: downloadURL,
+                            imagePath: fileName,
+                            status: 'pending',
+                            timestamp: Date.now()
+                        });
+
+                        allCloudPhotos.push({
+                            id: docRef.id,
+                            supplier: finalSupplier,
+                            orderDate: selectedDate,
+                            receivedDate: null,
+                            imageURL: downloadURL,
+                            imagePath: fileName,
+                            status: 'pending',
+                            timestamp: Date.now()
+                        });
+                    }
+                }
+                updateSupplierFilterOptions();
+                renderGallery();
+            } catch (error) {
+                console.error(error);
+                alert("Upload failed. Check your GitHub settings.");
+            } finally {
+                btnText.innerText = "📸 Add Photos to Pending";
+                document.getElementById('itemPhoto').value = "";
+            }
+        };
+
+        window.changeStatus = async function(id, newStatus) {
+            showLoader(true);
+            try {
+                const docRef = doc(db, "orders", id);
+                let recDate = newStatus === 'received' ? getTodayDateString() : null;
+                await updateDoc(docRef, { status: newStatus, receivedDate: recDate });
+                
+                let index = allCloudPhotos.findIndex(item => item.id === id);
+                if(index !== -1) {
+                    allCloudPhotos[index].status = newStatus;
+                    allCloudPhotos[index].receivedDate = recDate;
+                }
+                renderGallery();
+            } catch (e) { console.error(e); }
+            showLoader(false);
+        };
+
+        window.deletePhoto = async function(id) {
+            let confirmDel = confirm("Delete this order record permanently?");
+            if (confirmDel) {
+                showLoader(true);
+                try {
+                    let item = allCloudPhotos.find(i => i.id === id);
+                    if (item && item.imagePath) {
+                        await deletePhotoFromGitHub(item.imagePath);
+                    }
+                    await deleteDoc(doc(db, "orders", id));
+                    allCloudPhotos = allCloudPhotos.filter(i => i.id !== id);
+                    renderGallery();
+                } catch (e) { console.error(e); }
+                showLoader(false);
+            }
+        };
+
+        window.renderGallery = function() {
             const container = document.getElementById('galleryContainer');
-            let checklist = JSON.parse(localStorage.getItem('clothsync_photos')) || [];
             let filterSelect = document.getElementById('supplierFilter').value;
 
-            let pendingCount = checklist.filter(i => i.status === 'pending').length;
-            let receivedCount = checklist.filter(i => i.status === 'received').length;
+            let pendingCount = allCloudPhotos.filter(i => i.status === 'pending').length;
+            let receivedCount = allCloudPhotos.filter(i => i.status === 'received').length;
             document.getElementById('countPending').innerText = pendingCount;
             document.getElementById('countReceived').innerText = receivedCount;
 
             container.innerHTML = "";
 
-            let displayPhotos = checklist.filter(item => item.status === currentTab);
+            let displayPhotos = allCloudPhotos.filter(item => item.status === currentTab);
             if(filterSelect !== 'ALL') {
                 displayPhotos = displayPhotos.filter(item => item.supplier === filterSelect);
             }
@@ -507,7 +484,7 @@
             const sortedDates = Object.keys(groupedPhotos).sort((a, b) => new Date(b) - new Date(a));
 
             sortedDates.forEach(date => {
-                let displayDate = date === "No Date" ? "Unknown Date" : formatDate(date);
+                let displayDate = date === "No Date" ? "Unknown Date" : new Date(date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
                 let dateLabel = currentTab === 'received' ? "Date Received:" : "Order Date:";
                 
                 container.innerHTML += `
@@ -517,30 +494,23 @@
                     </div>
                 `;
                 
-                groupedPhotos[date].slice().reverse().forEach(item => {
+                groupedPhotos[date].sort((a, b) => b.timestamp - a.timestamp).forEach(item => {
                     let actionBtn = "";
                     let originalOrdInfo = "";
                     
                     if(currentTab === 'pending') {
-                        // અહીં ફેરફાર કર્યો છે: Mark as Received
-                        actionBtn = `
-                            <div class="btn-row">
-                                <button class="btn-status btn-receive" onclick="changeStatus(${item.id}, 'received')">✅ Mark as Received</button>
-                            </div>`;
+                        actionBtn = `<div class="btn-row"><button class="btn-status btn-receive" onclick="changeStatus('${item.id}', 'received')">✅ Mark as Received</button></div>`;
                     } else {
-                        // અહીં ફેરફાર કર્યો છે: Move to Pending
-                        actionBtn = `
-                            <div class="btn-row">
-                                <button class="btn-status btn-undo" onclick="changeStatus(${item.id}, 'pending')">⏳ Move to Pending</button>
-                            </div>`;
-                        originalOrdInfo = `<div class="original-date">Ord: ${formatDate(item.orderDate)}</div>`;
+                        actionBtn = `<div class="btn-row"><button class="btn-status btn-undo" onclick="changeStatus('${item.id}', 'pending')">⏳ Move to Pending</button></div>`;
+                        let ordDateFormatted = item.orderDate ? new Date(item.orderDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
+                        originalOrdInfo = `<div class="original-date">Ord: ${ordDateFormatted}</div>`;
                     }
 
                     const cardHTML = `
                         <div class="photo-card">
                             <div class="badge-supplier">${item.supplier}</div>
-                            <img src="${item.image}" class="photo-img" alt="Order Photo">
-                            <button class="btn-delete" onclick="deletePhoto(${item.id})">X</button>
+                            <img src="${item.imageURL}" class="photo-img" alt="Order Photo" loading="lazy">
+                            <button class="btn-delete" onclick="deletePhoto('${item.id}')">X</button>
                             <div class="action-bar">
                                 ${originalOrdInfo}
                                 ${actionBtn}
@@ -550,7 +520,33 @@
                     container.innerHTML += cardHTML;
                 });
             });
-        }
+        };
+        
+        window.sharePhotos = async function() {
+            let filterSelect = document.getElementById('supplierFilter').value;
+            let filteredPhotos = allCloudPhotos.filter(item => item.status === currentTab);
+            if(filterSelect !== 'ALL') { filteredPhotos = filteredPhotos.filter(item => item.supplier === filterSelect); }
+            if (filteredPhotos.length === 0) { alert("No photos to share!"); return; }
+
+            const shareBtn = document.getElementById('shareBtn');
+            shareBtn.innerText = "⏳ Prep...";
+            shareBtn.disabled = true;
+
+            try {
+                let fileArray = [];
+                for (let i = 0; i < filteredPhotos.length; i++) {
+                    const res = await fetch(filteredPhotos[i].imageURL);
+                    const blob = await res.blob();
+                    fileArray.push(new File([blob], `item_${i+1}.jpeg`, { type: 'image/jpeg' }));
+                }
+
+                let shareText = currentTab === 'received' ? `*Cloth.sync Update:* We have received these designs successfully.` : `*Cloth.sync Update:* These designs are still pending.`;
+                if (navigator.canShare && navigator.canShare({ files: fileArray })) {
+                    await navigator.share({ files: fileArray, title: 'Cloth.sync Update', text: shareText });
+                } else { alert("Sharing not supported on this device."); }
+            } catch (e) { console.error(e); } 
+            finally { shareBtn.innerText = "📤 Share"; shareBtn.disabled = false; }
+        };
     </script>
 </body>
 </html>
