@@ -95,13 +95,13 @@
 </head>
 <body>
 
-    <div id="loaderOverlay">⏳ Syncing with GitHub Cloud...</div>
+    <div id="loaderOverlay">⏳ Syncing with Cloud...</div>
 
     <div class="dashboard-container">
         <div class="header">
             <h1>Cloth.sync</h1>
             <p>Order & Receive Tracker</p>
-            <div class="cloud-badge">☁️ GITHUB AUTO-CLEAN (60 DAYS)</div>
+            <div class="cloud-badge">☁️ CLOUD AUTO-CLEAN (60 DAYS)</div>
         </div>
 
         <div class="content">
@@ -149,24 +149,10 @@
         </div>
     </div>
 
-    <!-- Firebase + GitHub API Integration SDK -->
+    <!-- Firebase + Vercel Backend API Integration -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-
-        // --- GitHub Config (કન્ફર્મ કરેલું) ---
-        const GITHUB_USER = "Clothsync";
-        const REPO_NAME = "clothsync-tracker";
-        // પેલા ચેક કરો કે LocalStorage માં ટોકન સેવ છે કે નહીં
-let GITHUB_TOKEN = localStorage.getItem('cloth_sync_gh_token');
-
-// જો ટોકન ન હોય, તો બોક્સ ખુલીને યુઝર પાસે માંગશે
-if (!GITHUB_TOKEN) {
-    GITHUB_TOKEN = prompt("કૃપા કરીને તમારો GitHub Personal Access Token અહીં નાખો (આ ફક્ત તમારા બ્રાઉઝરમાં સેવ થશે):");
-    if (GITHUB_TOKEN) {
-        localStorage.setItem('cloth_sync_gh_token', GITHUB_TOKEN.trim());
-    }
-}
 
         // --- Firebase Config ---
         const firebaseConfig = {
@@ -216,29 +202,17 @@ if (!GITHUB_TOKEN) {
             await fetchCloudData();
         };
 
-        // GitHub પરથી ફોટો પરમેનન્ટ ડિલીટ કરવાનું ફંક્શન
+        // --- Vercel Backend થી ફોટો ડિલીટ કરવાનું ફંક્શન ---
         async function deletePhotoFromGitHub(imagePath) {
             if (!imagePath) return;
             try {
-                const getRes = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${REPO_NAME}/contents/${imagePath}`, {
-                    headers: { "Authorization": `token ${GITHUB_TOKEN}` }
+                await fetch('/api/upload', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ path: imagePath })
                 });
-                if (getRes.ok) {
-                    const fileData = await getRes.json();
-                    await fetch(`https://api.github.com/repos/${GITHUB_USER}/${REPO_NAME}/contents/${imagePath}`, {
-                        method: "DELETE",
-                        headers: {
-                            "Authorization": `token ${GITHUB_TOKEN}`,
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify({
-                            message: "Auto-clean 60 days delete",
-                            sha: fileData.sha
-                        })
-                    });
-                }
             } catch (e) {
-                console.error("GitHub Delete Error:", e);
+                console.error("Vercel Delete Error:", e);
             }
         }
 
@@ -341,7 +315,7 @@ if (!GITHUB_TOKEN) {
             });
         }
 
-        // GitHub પર ફોટો અપલોડ કરવાનું ફંક્શન
+        // --- Vercel Backend દ્વારા ફોટો અપલોડ કરવાનું ફંક્શન ---
         window.addPhotos = async function(event) {
             const files = event.target.files;
             const selectedDate = document.getElementById('orderDate').value;
@@ -367,7 +341,7 @@ if (!GITHUB_TOKEN) {
 
             if (!selectedDate) { alert("Select Order Date!"); return; }
 
-            btnText.innerText = `⏳ Uploading to GitHub (0/${files.length})...`;
+            btnText.innerText = `⏳ Uploading to Cloud (0/${files.length})...`;
             
             try {
                 for (let i = 0; i < files.length; i++) {
@@ -377,28 +351,25 @@ if (!GITHUB_TOKEN) {
 
                     let fileName = `uploads/img_${Date.now()}_${Math.floor(Math.random()*1000)}.jpg`;
                     
-                    // GitHub API Request
-                    const ghResponse = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${REPO_NAME}/contents/${fileName}`, {
-                        method: "PUT",
-                        headers: {
-                            "Authorization": `token ${GITHUB_TOKEN}`,
-                            "Content-Type": "application/json"
-                        },
+                    // Vercel Backend API Request
+                    const ghResponse = await fetch('/api/upload', {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
-                            message: "Upload order photo via Cloth.sync",
-                            content: base64Data
+                            filename: fileName,
+                            content: base64Data,
+                            message: "Upload order photo via Cloth.sync"
                         })
                     });
 
                     const ghData = await ghResponse.json();
 
-if (!ghResponse.ok) {
-                        alert("GitHub Error: " + (ghData.message || "Bad credentials or permission denied"));
-                        console.error("GitHub Full Error:", ghData);
+                    if (!ghResponse.ok) {
+                        alert("Upload Error: " + (ghData.error || "Failed"));
+                        console.error("Upload Full Error:", ghData);
                         return;
                     }
 
-                    
                     if(ghResponse.ok) {
                         let downloadURL = ghData.content.download_url;
 
@@ -428,7 +399,7 @@ if (!ghResponse.ok) {
                 renderGallery();
             } catch (error) {
                 console.error(error);
-                alert("Upload failed. Check your GitHub settings.");
+                alert("Upload failed. Check your network or settings.");
             } finally {
                 btnText.innerText = "📸 Add Photos to Pending";
                 document.getElementById('itemPhoto').value = "";
