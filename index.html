@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cloth.sync | Order Tracker</title>
+    <title>Cloth.sync | Admin Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -63,7 +63,7 @@
         .filter-wrapper { display: flex; gap: 10px; margin-bottom: 15px; align-items: center; }
         .filter-select { flex: 1; margin: 0; width: 100%; padding: 10px; border: 1px solid var(--secondary); border-radius: 6px; font-weight: 600; outline: none; }
         
-        .btn-whatsapp { background: var(--accent); color: white; border: none; padding: 10px 15px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+        .btn-whatsapp { background: var(--accent); color: white; border: none; padding: 10px 15px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; }
 
         .date-header { background: var(--secondary); color: var(--primary); padding: 8px 12px; border-radius: 6px; margin: 20px 0 10px 0; font-size: 14px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
         .date-label-badge { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
@@ -89,40 +89,52 @@
         .footer { margin-top: 20px; padding: 15px 20px; border-top: 1px solid var(--secondary); display: flex; justify-content: space-between; align-items: center; }
         .footer-text { font-size: 12px; color: var(--text-muted); font-weight: 500; }
         .footer-text span { font-weight: 700; color: var(--primary); }
+        .logout-btn { background: #fee2e2; color: #dc2626; padding: 5px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; border: none; }
 
         #loaderOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.85); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; display: none; font-weight: 700; color: var(--primary); font-size: 18px; }
-    /* ====== DESKTOP FULL SCREEN VERSION ====== */
-@media (min-width: 768px) {
-    .dashboard-container { 
-        max-width: 1200px; /* ડેસ્કટોપમાં ફૂલ પહોળાઈ */
-        padding: 20px;
-    }
-    .upload-section { 
-        display: grid; 
-        grid-template-columns: 1fr 1fr 1fr; /* ૩ બોક્સ બાજુ-બાજુમાં */
-        gap: 20px; 
-        align-items: end; 
-    }
-    .input-group { margin-bottom: 0; }
-    .file-upload-wrapper { margin-top: 0; }
-    .photo-grid { 
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* ડેસ્કટોપમાં એક લાઇનમાં ૪-૫ ફોટા */
-        gap: 20px; 
-    }
-    .tabs, .filter-wrapper { max-width: 500px; margin: 0 auto 20px auto; }
-    .photo-img { aspect-ratio: 3/4; }
-}
+
+        /* ====== LOGIN SECURITY CSS ====== */
+        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .login-box { background: white; padding: 30px; border-radius: 12px; text-align: center; max-width: 320px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .login-box h2 { color: var(--primary); margin-bottom: 5px; font-weight: 800; }
+        .login-box p { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+        .login-box input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid var(--secondary); border-radius: 6px; font-size: 18px; text-align: center; letter-spacing: 2px; outline: none; }
+        .login-box input:focus { border-color: var(--accent); }
+        .login-box button { width: 100%; padding: 14px; background: var(--accent); color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 15px; cursor: pointer; }
+        #loginError { color: var(--danger); font-size: 12px; display: none; margin-top: 12px; font-weight: bold; }
+
+        /* ====== DESKTOP FULL SCREEN VERSION ====== */
+        @media (min-width: 768px) {
+            .dashboard-container { max-width: 1200px; padding: 20px; }
+            .upload-section { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; align-items: end; }
+            .input-group { margin-bottom: 0; }
+            .file-upload-wrapper { margin-top: 0; }
+            .photo-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+            .tabs, .filter-wrapper { max-width: 500px; margin: 0 auto 20px auto; }
+            .photo-img { aspect-ratio: 3/4; }
+        }
     </style>
 </head>
 <body>
 
+    <!-- ====== LOGIN SCREEN ====== -->
+    <div id="loginOverlay">
+        <div class="login-box">
+            <h2>Admin Lock 🔒</h2>
+            <p>Enter password to access Cloth.sync</p>
+            <input type="password" id="adminPin" placeholder="Enter Password" onkeypress="if(event.key === 'Enter') checkPin()">
+            <button onclick="checkPin()">Unlock Dashboard</button>
+            <p id="loginError">❌ Incorrect Password!</p>
+        </div>
+    </div>
+
     <div id="loaderOverlay">⏳ Syncing with Cloud...</div>
 
-    <div class="dashboard-container">
+    <div class="dashboard-container" id="mainDashboard" style="display: none;">
         <div class="header">
             <h1>Cloth.sync</h1>
-            <p>Order & Receive Tracker</p>
-            <div class="cloud-badge">☁️ CLOUD BASED </div>
+            <p>Admin Dashboard</p>
+            <div class="cloud-badge">☁️ CLOUD AUTO-CLEAN (60 DAYS)</div>
         </div>
 
         <div class="content">
@@ -156,18 +168,19 @@
             </div>
 
             <div class="filter-wrapper">
-    <select id="supplierFilter" class="filter-select" onchange="renderGallery()">
-        <option value="ALL">All Suppliers</option>
-    </select>
-    <button class="btn-whatsapp" style="background:#4a5568;" onclick="copySupplierLink()">🔗 Copy Link</button>
-    <button class="btn-whatsapp" id="shareBtn" onclick="sharePhotos()">📤 Share</button>
-</div>
+                <select id="supplierFilter" class="filter-select" onchange="renderGallery()">
+                    <option value="ALL">All Suppliers</option>
+                </select>
+                <button class="btn-whatsapp" style="background:#4a5568;" onclick="copySupplierLink()">🔗 Copy Link</button>
+                <button class="btn-whatsapp" id="shareBtn" onclick="sharePhotos()">📤 Share</button>
+            </div>
 
             <div id="galleryContainer" class="photo-grid"></div>
         </div>
 
         <div class="footer">
             <div class="footer-text">Developed by <br><span>Smit Babariya</span></div>
+            <button class="logout-btn" onclick="logoutAdmin()">🚪 Logout</button>
         </div>
     </div>
 
@@ -175,6 +188,29 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        // ==========================================
+        // અહી તમારો પાસવર્ડ લખો (તમે ગમે તે રાખી શકો છો)
+        // ==========================================
+        const ADMIN_PASSWORD = "1234"; 
+
+        window.checkPin = function() {
+            const pin = document.getElementById('adminPin').value;
+            if(pin === ADMIN_PASSWORD) {
+                localStorage.setItem('clothsync_admin_auth', 'success');
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('mainDashboard').style.display = 'block';
+                document.getElementById('orderDate').valueAsDate = new Date();
+                fetchCloudData();
+            } else {
+                document.getElementById('loginError').style.display = 'block';
+            }
+        };
+
+        window.logoutAdmin = function() {
+            localStorage.removeItem('clothsync_admin_auth');
+            location.reload(); // પેજ રિફ્રેશ થશે અને પાછો પાસવર્ડ માંગશે
+        };
 
         // --- Firebase Config ---
         const firebaseConfig = {
@@ -193,6 +229,19 @@
         let currentTab = 'pending';
         let savedSuppliersList = [];
         let allCloudPhotos = [];
+
+        window.onload = async function() {
+            // ચેક કરો કે લોગીન કરેલું છે કે નહિ
+            if(localStorage.getItem('clothsync_admin_auth') === 'success') {
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('mainDashboard').style.display = 'block';
+                document.getElementById('orderDate').valueAsDate = new Date();
+                await fetchCloudData();
+            } else {
+                document.getElementById('loginOverlay').style.display = 'flex';
+                document.getElementById('mainDashboard').style.display = 'none';
+            }
+        };
 
         window.switchTab = function(tabName) {
             currentTab = tabName;
@@ -219,12 +268,6 @@
             document.getElementById('loaderOverlay').style.display = show ? 'flex' : 'none';
         }
 
-        window.onload = async function() {
-            document.getElementById('orderDate').valueAsDate = new Date();
-            await fetchCloudData();
-        };
-
-        // --- Vercel Backend થી ફોટો ડિલીટ કરવાનું ફંક્શન ---
         async function deletePhotoFromGitHub(imagePath) {
             if (!imagePath) return;
             try {
@@ -253,7 +296,6 @@
                     let data = docSnap.data();
                     let id = docSnap.id;
 
-                    // 60 દિવસ જૂના Received ઓર્ડર ઓટો-ક્લીન લોજિક
                     if (data.status === 'received' && data.receivedDate) {
                         let recDate = new Date(data.receivedDate);
                         let diffDays = (today - recDate) / (1000 * 60 * 60 * 24);
@@ -270,7 +312,6 @@
                     }
                 });
 
-                // ફાયરબેઝ અને GitHub બંનેમાંથી એકસાથે ક્લીન કરો
                 for (let item of itemsToDelete) {
                     await deletePhotoFromGitHub(item.path);
                     await deleteDoc(doc(db, "orders", item.id));
@@ -337,7 +378,6 @@
             });
         }
 
-        // --- Vercel Backend દ્વારા ફોટો અપલોડ કરવાનું ફંક્શન ---
         window.addPhotos = async function(event) {
             const files = event.target.files;
             const selectedDate = document.getElementById('orderDate').value;
@@ -373,7 +413,6 @@
 
                     let fileName = `uploads/img_${Date.now()}_${Math.floor(Math.random()*1000)}.jpg`;
                     
-                    // Vercel Backend API Request
                     const ghResponse = await fetch('/api/upload', {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
@@ -388,7 +427,6 @@
 
                     if (!ghResponse.ok) {
                         alert("Upload Error: " + (ghData.error || "Failed"));
-                        console.error("Upload Full Error:", ghData);
                         return;
                     }
 
@@ -530,18 +568,18 @@
                 });
             });
         };
-
-        window.copySupplierLink = function() {
-    let supp = document.getElementById('supplierFilter').value;
-    if(supp === 'ALL' || supp === "") { 
-        alert("Please select a specific Supplier from the dropdown first!"); 
-        return; 
-    }
-    let link = window.location.origin + '/supplier.html?name=' + encodeURIComponent(supp);
-    navigator.clipboard.writeText(link);
-    alert("✅ Link Copied!\nSend this link to " + supp);
-};
         
+        window.copySupplierLink = function() {
+            let supp = document.getElementById('supplierFilter').value;
+            if(supp === 'ALL' || supp === "") { 
+                alert("Please select a specific Supplier from the dropdown first!"); 
+                return; 
+            }
+            let link = window.location.origin + '/supplier.html?name=' + encodeURIComponent(supp);
+            navigator.clipboard.writeText(link);
+            alert("✅ Link Copied!\nSend this link to " + supp);
+        };
+
         window.sharePhotos = async function() {
             let filterSelect = document.getElementById('supplierFilter').value;
             let filteredPhotos = allCloudPhotos.filter(item => item.status === currentTab);
