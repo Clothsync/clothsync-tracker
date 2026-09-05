@@ -91,6 +91,27 @@
         .footer-text span { font-weight: 700; color: var(--primary); }
 
         #loaderOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.85); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; display: none; font-weight: 700; color: var(--primary); font-size: 18px; }
+    /* ====== DESKTOP FULL SCREEN VERSION ====== */
+@media (min-width: 768px) {
+    .dashboard-container { 
+        max-width: 1200px; /* ડેસ્કટોપમાં ફૂલ પહોળાઈ */
+        padding: 20px;
+    }
+    .upload-section { 
+        display: grid; 
+        grid-template-columns: 1fr 1fr 1fr; /* ૩ બોક્સ બાજુ-બાજુમાં */
+        gap: 20px; 
+        align-items: end; 
+    }
+    .input-group { margin-bottom: 0; }
+    .file-upload-wrapper { margin-top: 0; }
+    .photo-grid { 
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* ડેસ્કટોપમાં એક લાઇનમાં ૪-૫ ફોટા */
+        gap: 20px; 
+    }
+    .tabs, .filter-wrapper { max-width: 500px; margin: 0 auto 20px auto; }
+    .photo-img { aspect-ratio: 3/4; }
+}
     </style>
 </head>
 <body>
@@ -101,7 +122,7 @@
         <div class="header">
             <h1>Cloth.sync</h1>
             <p>Order & Receive Tracker</p>
-            <div class="cloud-badge">☁️ CLOUD AUTO-CLEAN (60 DAYS)</div>
+            <div class="cloud-badge">☁️ CLOUD BASED </div>
         </div>
 
         <div class="content">
@@ -135,11 +156,12 @@
             </div>
 
             <div class="filter-wrapper">
-                <select id="supplierFilter" class="filter-select" onchange="renderGallery()">
-                    <option value="ALL">All Suppliers</option>
-                </select>
-                <button class="btn-whatsapp" id="shareBtn" onclick="sharePhotos()">📤 Share</button>
-            </div>
+    <select id="supplierFilter" class="filter-select" onchange="renderGallery()">
+        <option value="ALL">All Suppliers</option>
+    </select>
+    <button class="btn-whatsapp" style="background:#4a5568;" onclick="copySupplierLink()">🔗 Copy Link</button>
+    <button class="btn-whatsapp" id="shareBtn" onclick="sharePhotos()">📤 Share</button>
+</div>
 
             <div id="galleryContainer" class="photo-grid"></div>
         </div>
@@ -508,6 +530,17 @@
                 });
             });
         };
+
+        window.copySupplierLink = function() {
+    let supp = document.getElementById('supplierFilter').value;
+    if(supp === 'ALL' || supp === "") { 
+        alert("Please select a specific Supplier from the dropdown first!"); 
+        return; 
+    }
+    let link = window.location.origin + '/supplier.html?name=' + encodeURIComponent(supp);
+    navigator.clipboard.writeText(link);
+    alert("✅ Link Copied!\nSend this link to " + supp);
+};
         
         window.sharePhotos = async function() {
             let filterSelect = document.getElementById('supplierFilter').value;
