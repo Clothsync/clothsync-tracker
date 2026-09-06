@@ -228,7 +228,15 @@
                 displayData = allPhotos.filter(i => i.status === currentTab);
             }
             
-            displayData.sort((a,b) => b.timestamp - a.timestamp);
+            // ✅ નવું સોર્ટિંગ લોજીક (લેટેસ્ટ રિસીવ થયેલો માલ ટોપ પર)
+            displayData.sort((a, b) => {
+                // જો રિસીવ થયેલો માલ હોય, તો Received Date પ્રમાણે સોર્ટ કરો
+                let timeB = b.receivedDate ? new Date(b.receivedDate).getTime() : b.timestamp;
+                let timeA = a.receivedDate ? new Date(a.receivedDate).getTime() : a.timestamp;
+                
+                if (timeB !== timeA) return timeB - timeA;
+                return b.timestamp - a.timestamp; // જો તારીખ સરખી હોય, તો સમય પ્રમાણે સોર્ટ કરો
+            });
 
             if(displayData.length === 0) {
                 gallery.innerHTML = `<div class="empty-state">No designs found in this category.</div>`;
@@ -236,14 +244,24 @@
             }
 
             displayData.forEach(item => {
-                let displayDate = item.orderDate ? new Date(item.orderDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'No Date';
-                
-                // ઓર્ડર ID માટે ફાયરબેઝ ના ID ના પહેલા 6 આંકડા લીધા છે જેથી પ્રોફેશનલ લાગે
+                let displayOrderDate = item.orderDate ? new Date(item.orderDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'No Date';
                 let shortOrderId = "#CS-" + item.id.substring(0, 6).toUpperCase(); 
 
                 let badgeHTML = item.status === 'pending' 
                     ? `<div class="badge pending">⏳ Pending</div>` 
                     : `<div class="badge received">✅ Received</div>`;
+                
+                // ✅ જો માલ રિસીવ થઈ ગયો હોય, તો એની તારીખ કાર્ડમાં બતાવો
+                let receivedDateHTML = "";
+                if (item.status === 'received' && item.receivedDate) {
+                    let displayRecDate = new Date(item.receivedDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+                    receivedDateHTML = `
+                        <div class="order-id-row" style="margin-top: 5px; margin-bottom: 0;">
+                            <span style="font-size: 11px; color: var(--stat-received-text); font-weight: 700;">Received on</span>
+                            <span class="order-date" style="color: var(--stat-received-text); background: var(--stat-received-bg);">${displayRecDate}</span>
+                        </div>
+                    `;
+                }
 
                 gallery.innerHTML += `
                     <div class="product-card">
@@ -256,10 +274,13 @@
                                 <span class="order-id">${shortOrderId}</span>
                             </div>
                             <div class="card-title">Garment Design</div>
+                            
                             <div class="order-id-row" style="margin-top: 10px; margin-bottom: 0;">
                                 <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Order Date</span>
-                                <span class="order-date">${displayDate}</span>
+                                <span class="order-date">${displayOrderDate}</span>
                             </div>
+                            
+                            ${receivedDateHTML}
                         </div>
                     </div>
                 `;
