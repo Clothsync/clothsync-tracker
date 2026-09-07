@@ -176,6 +176,10 @@
                 <span id="pageInfo" style="font-size: 13px; font-weight: bold;">Page 1 of 1</span>
                 <button id="nextBtn" onclick="changePage(1)">Next ➡️</button>
             </div>
+            
+            <div style="text-align: center; margin-top: 20px; font-size: 12px; color: var(--text-muted); font-weight: 500;">
+                Developed by <br><span style="font-weight: 700; color: var(--primary);">Smit Babariya</span>
+            </div>
         </div>
     </div>
 
@@ -458,14 +462,7 @@
             });
         };
 
-        // --- PDF Catalogue Generator ---
-        window.downloadPDF = async function() {
-            let supp = document.getElementById('supplierFilter').value;
-            if(supp === 'ALL' || supp === "") { alert("Please select a specific supplier from the dropdown first to generate their PDF."); return; }
-            
-            let pendingItems = allCloudPhotos.filter(i => i.supplier === supp && (i.status === 'pending' || i.status === 'partial'));
-            if(pendingItems.length === 0) { alert("No pending items for this supplier!"); return; }
-// --- PDF Catalogue Generator (Date-Wise Sorted) ---
+        // --- PDF Catalogue Generator (Date-Wise Sorted) ---
         window.downloadPDF = async function() {
             let supp = document.getElementById('supplierFilter').value;
             if(supp === 'ALL' || supp === "") { alert("Please select a specific supplier from the dropdown first to generate their PDF."); return; }
@@ -473,7 +470,7 @@
             let pendingItems = allCloudPhotos.filter(i => i.supplier === supp && (i.status === 'pending' || i.status === 'partial'));
             if(pendingItems.length === 0) { alert("No pending items for this supplier!"); return; }
 
-            // ✅ અહી નવું સોર્ટિંગ એડ કર્યું છે (નવી તારીખ વાળો માલ પહેલા આવશે)
+            // ✅ અહી સોર્ટિંગ એડ કરેલું છે 
             pendingItems.sort((a, b) => b.timestamp - a.timestamp);
 
             const btn = document.getElementById('pdfBtn');
@@ -500,7 +497,6 @@
                     doc.text(`ID: ${ordStr}`, xPos, yPos + 65);
                     doc.text(`Date: ${pendingItems[i].orderDate}`, xPos, yPos + 70);
                     
-                    // જો માલ Partial હશે તો એ પીળા કલરમાં લખાઈને આવશે
                     if(pendingItems[i].status === 'partial') { doc.setTextColor(214, 158, 46); doc.text(`(Partial)`, xPos, yPos + 75); doc.setTextColor(0,0,0); }
 
                     xPos += 60; if(xPos > 180) { xPos = 15; yPos += 85; }
@@ -509,11 +505,39 @@
             } catch (e) { alert("Error generating PDF"); console.error(e); } 
             finally { btn.innerText = "📄 PDF Catalog"; btn.disabled = false; }
         };
+
         window.copySupplierLink = function() {
             let s = document.getElementById('supplierFilter').value;
             if(s === 'ALL' || !s) { alert("Select Supplier first!"); return; }
             navigator.clipboard.writeText(window.location.origin + '/supplier.html?name=' + encodeURIComponent(s));
             alert("✅ Link Copied!");
+        };
+
+        window.sharePhotos = async function() {
+            let filterSelect = document.getElementById('supplierFilter').value;
+            let filteredPhotos = allCloudPhotos.filter(item => item.status === currentTab);
+            if(filterSelect !== 'ALL') { filteredPhotos = filteredPhotos.filter(item => item.supplier === filterSelect); }
+            if (filteredPhotos.length === 0) { alert("No photos to share!"); return; }
+
+            const shareBtn = document.getElementById('shareBtn');
+            const originalText = shareBtn.innerText;
+            shareBtn.innerText = "⏳ Prep...";
+            shareBtn.disabled = true;
+
+            try {
+                let fileArray = [];
+                for (let i = 0; i < filteredPhotos.length; i++) {
+                    const res = await fetch(filteredPhotos[i].imageURL);
+                    const blob = await res.blob();
+                    fileArray.push(new File([blob], `item_${i+1}.jpeg`, { type: 'image/jpeg' }));
+                }
+
+                let shareText = currentTab === 'received' ? `*Cloth.sync Update:* We have received these designs successfully.` : `*Cloth.sync Update:* These designs are still pending.`;
+                if (navigator.canShare && navigator.canShare({ files: fileArray })) {
+                    await navigator.share({ files: fileArray, title: 'Cloth.sync Update', text: shareText });
+                } else { alert("Sharing not supported on this device."); }
+            } catch (e) { console.error(e); } 
+            finally { shareBtn.innerText = originalText; shareBtn.disabled = false; }
         };
     </script>
 </body>
