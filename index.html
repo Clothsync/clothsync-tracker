@@ -4,252 +4,206 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Cloth.sync | Admin Dashboard</title>
+    <!-- PWA Setup (App Install) -->
+    <link id="manifestLink" rel="manifest" href="">
+    <meta name="theme-color" content="#1a365d">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- jsPDF for Catalogue -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <style>
-        :root {
-            --primary: #1a365d;       
-            --secondary: #e2e8f0;     
-            --accent: #3182ce;        
-            --danger: #e53e3e;
-            --success: #38a169;
-            --text-main: #2d3748;
-            --text-muted: #718096;
-            --bg-body: #f7fafc;
-            --bg-card: #ffffff;
-        }
-
+        :root { --primary: #1a365d; --secondary: #e2e8f0; --accent: #3182ce; --danger: #e53e3e; --success: #38a169; --warning: #d69e2e; --text-main: #2d3748; --text-muted: #718096; --bg-body: #f7fafc; --bg-card: #ffffff; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg-body); color: var(--text-main); padding: 10px; display: flex; justify-content: center; }
 
-        body {
-            background-color: var(--bg-body); color: var(--text-main);
-            padding: 10px; display: flex; justify-content: center;
-        }
-
-        .dashboard-container {
-            width: 100%; max-width: 500px; background: var(--bg-card);
-            border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); overflow: hidden; padding-bottom: 20px;
-        }
-
+        .dashboard-container { width: 100%; max-width: 500px; background: var(--bg-card); border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); overflow: hidden; padding-bottom: 20px; position: relative; }
         .header { background-color: var(--primary); color: white; padding: 20px 15px; text-align: center; }
-        .header h1 { margin: 0; font-size: 24px; font-weight: 800; letter-spacing: 0.5px; }
-        .header p { margin: 5px 0 0 0; font-size: 13px; color: #cbd5e0; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
-        .cloud-badge { display: inline-block; background: #ecc94b; color: #744210; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 12px; margin-top: 8px; letter-spacing: 0.5px; }
+        .header h1 { margin: 0; font-size: 24px; font-weight: 800; }
+        .header p { margin: 5px 0 0 0; font-size: 13px; color: #cbd5e0; font-weight: 500; text-transform: uppercase; }
+        
+        /* PWA Install Button */
+        #installAppBtn { display: none; position: absolute; top: 15px; right: 15px; background: #ecc94b; color: #744210; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 11px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
 
         .content { padding: 15px; }
-
         .upload-section { background: #f8fafc; border: 1px solid var(--secondary); padding: 15px; border-radius: 10px; margin-bottom: 20px; }
         .input-group { margin-bottom: 12px; }
         .input-label { font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; display: block; }
-        
-        .form-select, .date-input, .text-input {
-            width: 100%; padding: 12px 10px; border: 1px solid var(--secondary); border-radius: 6px;
-            font-size: 15px; font-weight: 600; color: var(--text-main); background: white; outline: none; appearance: none;
-        }
-        .form-select:focus, .date-input:focus, .text-input:focus { border-color: var(--accent); }
-        
+        .form-select, .date-input, .text-input { width: 100%; padding: 12px 10px; border: 1px solid var(--secondary); border-radius: 6px; font-size: 15px; font-weight: 600; color: var(--text-main); background: white; outline: none; }
         .new-supplier-box { display: none; margin-top: 10px; }
 
         .file-upload-wrapper { position: relative; overflow: hidden; display: inline-block; width: 100%; margin-top: 10px; }
-        .file-upload-btn {
-            background: var(--accent); color: white; width: 100%; padding: 14px; border-radius: 8px; text-align: center; font-weight: 700; font-size: 15px; cursor: pointer; box-shadow: 0 4px 6px rgba(49, 130, 206, 0.2); transition: 0.2s;
-        }
-        .file-upload-btn:active { transform: scale(0.98); }
+        .file-upload-btn { background: var(--accent); color: white; width: 100%; padding: 14px; border-radius: 8px; text-align: center; font-weight: 700; font-size: 15px; cursor: pointer; }
         .file-upload-wrapper input[type="file"] { font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; height: 100%; }
 
-        .tabs { display: flex; gap: 10px; margin-bottom: 15px; }
-        .tab-btn { flex: 1; padding: 12px 10px; text-align: center; font-weight: 700; font-size: 14px; border-radius: 6px; cursor: pointer; border: 1px solid var(--secondary); background: #f8fafc; color: var(--text-main); }
+        .tabs { display: flex; gap: 5px; margin-bottom: 15px; }
+        .tab-btn { flex: 1; padding: 10px 5px; text-align: center; font-weight: 700; font-size: 13px; border-radius: 6px; cursor: pointer; border: 1px solid var(--secondary); background: #f8fafc; color: var(--text-main); }
         .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        .filter-wrapper { display: flex; gap: 10px; margin-bottom: 15px; align-items: center; }
-        .filter-select { flex: 1; margin: 0; width: 100%; padding: 10px; border: 1px solid var(--secondary); border-radius: 6px; font-weight: 600; outline: none; }
+        .filter-wrapper { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid var(--secondary); }
+        .filter-row { display: flex; gap: 8px; }
+        .filter-select { flex: 1; padding: 10px; border: 1px solid var(--secondary); border-radius: 6px; font-weight: 600; outline: none; }
+        .btn-action { flex: 1; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; }
         
-        .btn-whatsapp { background: var(--accent); color: white; border: none; padding: 10px 15px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; }
-
-        .date-header { background: var(--secondary); color: var(--primary); padding: 8px 12px; border-radius: 6px; margin: 20px 0 10px 0; font-size: 14px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
-        .date-label-badge { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
+        .last-seen-badge { font-size: 12px; font-weight: 700; color: var(--accent); text-align: center; display: none; background: #ebf8ff; padding: 6px; border-radius: 6px; border: 1px solid #bee3f8; }
 
         .photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        
-        .photo-card { position: relative; border-radius: 8px; overflow: hidden; border: 1px solid var(--secondary); background: #000; aspect-ratio: 3/4; transition: 0.3s; }
+        .photo-card { position: relative; border-radius: 8px; overflow: hidden; border: 1px solid var(--secondary); background: #000; aspect-ratio: 3/4; }
         .photo-img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0.9; }
         
-        .badge-supplier { position: absolute; top: 5px; left: 5px; background: rgba(26, 54, 93, 0.85); color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; z-index: 2; max-width: 80%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-        /* ====== NEW FEATURES CSS ====== */
+        .badge-supplier { position: absolute; top: 5px; left: 5px; background: rgba(26, 54, 93, 0.85); color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; z-index: 2; }
         @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
-        .badge-new { position: absolute; top: 32px; left: 5px; background: #e53e3e; color: white; padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: 800; z-index: 2; animation: pulse 1.5s infinite; box-shadow: 0 2px 5px rgba(229, 62, 62, 0.5); }
+        .badge-new { position: absolute; top: 32px; left: 5px; background: #e53e3e; color: white; padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: 800; z-index: 2; animation: pulse 1.5s infinite; }
         
         .late-warning-card { border: 2px solid #e53e3e !important; box-shadow: 0 0 12px rgba(229, 62, 62, 0.4); }
-        .late-text { font-size: 10px; color: #fff; font-weight: 800; background: #e53e3e; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.5px; animation: pulse 2s infinite;}
-
-        .pagination-controls { grid-column: span 2; display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding: 15px; background: #f8fafc; border-radius: 8px; border: 1px solid var(--secondary); }
-        .pagination-controls button { padding: 8px 15px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .pagination-controls button:disabled { background: var(--secondary); color: var(--text-muted); cursor: not-allowed; }
-        .page-info { font-size: 13px; font-weight: 700; color: var(--text-main); }
-        /* ============================== */
+        .late-text { font-size: 10px; color: #fff; font-weight: 800; background: #e53e3e; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-bottom: 3px; text-transform: uppercase; animation: pulse 2s infinite;}
 
         .action-bar { position: absolute; bottom: 0; left: 0; width: 100%; padding: 6px; background: linear-gradient(transparent, rgba(0,0,0,0.85)); display: flex; gap: 4px; flex-direction: column; }
-        .original-date { color: #cbd5e0; font-size: 10px; text-align: center; margin-bottom: 1px; font-weight: 600; }
-        
         .btn-row { display: flex; gap: 4px; width: 100%; }
-        .btn-status { flex: 1; padding: 6px 4px; border: none; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; text-align: center; }
-        .btn-receive { background: var(--success); color: white; }
-        .btn-undo { background: #4a5568; color: white; }
-        
+        .btn-status { flex: 1; padding: 6px 2px; border: none; border-radius: 4px; font-size: 10px; font-weight: 700; cursor: pointer; text-align: center; color: white; }
+        .btn-receive { background: var(--success); }
+        .btn-partial { background: var(--warning); }
+        .btn-undo { background: #4a5568; }
         .btn-delete { position: absolute; top: 5px; right: 5px; background: rgba(229, 62, 62, 0.9); color: white; border: none; width: 25px; height: 25px; border-radius: 50%; font-size: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 2; }
 
+        .pagination-controls { grid-column: span 2; display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding: 15px; background: #f8fafc; border-radius: 8px; border: 1px solid var(--secondary); }
+        .pagination-controls button { padding: 8px 15px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .pagination-controls button:disabled { background: var(--secondary); cursor: not-allowed; }
+        
         .empty-state { text-align: center; color: var(--text-muted); font-size: 13px; padding: 20px; background: #f8fafc; border-radius: 8px; border: 1px dashed var(--secondary); grid-column: span 2; }
-
-        .footer { margin-top: 20px; padding: 15px 20px; border-top: 1px solid var(--secondary); display: flex; justify-content: space-between; align-items: center; }
-        .footer-text { font-size: 12px; color: var(--text-muted); font-weight: 500; }
-        .footer-text span { font-weight: 700; color: var(--primary); }
-        .logout-btn { background: #fee2e2; color: #dc2626; padding: 5px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; border: none; }
-
-        #loaderOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.85); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; display: none; font-weight: 700; color: var(--primary); font-size: 18px; }
-
-        /* ====== LOGIN SECURITY CSS ====== */
-        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .login-box { background: white; padding: 30px; border-radius: 12px; text-align: center; max-width: 320px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-        .login-box h2 { color: var(--primary); margin-bottom: 5px; font-weight: 800; }
-        .login-box p { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
-        .login-box input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid var(--secondary); border-radius: 6px; font-size: 18px; text-align: center; letter-spacing: 2px; outline: none; }
-        .login-box input:focus { border-color: var(--accent); }
+        #loaderOverlay, #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #loaderOverlay { background: rgba(255,255,255,0.85); font-weight: 700; color: var(--primary); font-size: 18px; display: none; }
+        #loginOverlay { background: var(--primary); }
+        .login-box { background: white; padding: 30px; border-radius: 12px; text-align: center; width: 90%; max-width: 320px; }
+        .login-box input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid var(--secondary); border-radius: 6px; font-size: 18px; text-align: center; }
         .login-box button { width: 100%; padding: 14px; background: var(--accent); color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 15px; cursor: pointer; }
-        #loginError { color: var(--danger); font-size: 12px; display: none; margin-top: 12px; font-weight: bold; }
-
-        /* ====== DESKTOP FULL SCREEN VERSION ====== */
+        
         @media (min-width: 768px) {
             .dashboard-container { max-width: 1200px; padding: 20px; }
             .upload-section { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; align-items: end; }
-            .input-group { margin-bottom: 0; }
-            .file-upload-wrapper { margin-top: 0; }
             .photo-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
-            .tabs, .filter-wrapper { max-width: 500px; margin: 0 auto 20px auto; }
-            .photo-img { aspect-ratio: 3/4; }
+            .tabs, .filter-wrapper { max-width: 600px; margin: 0 auto 20px auto; }
         }
     </style>
 </head>
 <body>
 
-    <!-- ====== LOGIN SCREEN ====== -->
+    <!-- PWA Installation Script -->
+    <script>
+        const manifest = { "name": "Cloth.sync Admin", "short_name": "Cloth.sync", "display": "standalone", "background_color": "#ffffff", "theme_color": "#1a365d", "icons": [{"src": "https://cdn-icons-png.flaticon.com/512/3159/3159614.png", "sizes": "512x512", "type": "image/png"}] };
+        const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+        document.getElementById('manifestLink').href = URL.createObjectURL(manifestBlob);
+        const swCode = `self.addEventListener('fetch', function(e) {});`;
+        const swBlob = new Blob([swCode], {type: 'application/javascript'});
+        navigator.serviceWorker.register(URL.createObjectURL(swBlob));
+        
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault(); deferredPrompt = e;
+            document.getElementById('installAppBtn').style.display = 'block';
+        });
+        function installApp() {
+            if(deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; document.getElementById('installAppBtn').style.display = 'none'; }
+        }
+    </script>
+
+    <!-- Login -->
     <div id="loginOverlay">
         <div class="login-box">
-            <h2>Admin Lock 🔒</h2>
-            <p>Enter password to access Cloth.sync</p>
+            <h2 style="color:var(--primary); margin-bottom:5px;">Admin Lock 🔒</h2>
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom:20px;">Enter password to access Cloth.sync</p>
             <input type="password" id="adminPin" placeholder="Enter Password" onkeypress="if(event.key === 'Enter') checkPin()">
             <button onclick="checkPin()">Unlock Dashboard</button>
-            <p id="loginError">❌ Incorrect Password!</p>
+            <p id="loginError" style="color:var(--danger); display:none; margin-top:10px; font-weight:bold;">❌ Incorrect Password!</p>
         </div>
     </div>
 
-    <div id="loaderOverlay">⏳ Syncing with Cloud...</div>
+    <div id="loaderOverlay">⏳ Syncing...</div>
 
     <div class="dashboard-container" id="mainDashboard" style="display: none;">
+        <button id="installAppBtn" onclick="installApp()">📲 Install App</button>
         <div class="header">
             <h1>Cloth.sync</h1>
             <p>Admin Dashboard</p>
-            <div class="cloud-badge">☁️ CLOUD AUTO-CLEAN (60 DAYS)</div>
         </div>
 
         <div class="content">
             <div class="upload-section">
                 <div class="input-group">
-                    <label class="input-label">Select Supplier (Mandatory)</label>
+                    <label class="input-label">Select Supplier</label>
                     <select id="supplierSelect" class="form-select" onchange="handleSupplierSelection()">
                         <option value="">-- Choose Supplier --</option>
                         <option value="NEW_SUPPLIER">+ Add New Supplier</option>
                     </select>
                 </div>
-                
                 <div class="input-group new-supplier-box" id="newSupplierBox">
                     <input type="text" id="newSupplierInput" class="text-input" placeholder="Type new supplier name...">
                 </div>
-
                 <div class="input-group">
                     <label class="input-label">Order Date</label>
                     <input type="date" id="orderDate" class="date-input">
                 </div>
-                
                 <div class="file-upload-wrapper">
-                    <div class="file-upload-btn" id="uploadBtnText">📸 Add Photos to Pending</div>
+                    <div class="file-upload-btn" id="uploadBtnText">📸 Add Photos (Watermarked)</div>
                     <input type="file" id="itemPhoto" accept="image/*" multiple onchange="addPhotos(event)">
                 </div>
             </div>
 
+            <!-- Tabs with Partial Added -->
             <div class="tabs">
-                <div class="tab-btn active" id="tabPending" onclick="switchTab('pending')">⏳ Pending (<span id="countPending">0</span>)</div>
-                <div class="tab-btn" id="tabReceived" onclick="switchTab('received')">✅ Received (<span id="countReceived">0</span>)</div>
+                <div class="tab-btn active" id="tabPending" onclick="switchTab('pending')">⏳ Pending (<span id="cPending">0</span>)</div>
+                <div class="tab-btn" id="tabPartial" onclick="switchTab('partial')">⚠️ Partial (<span id="cPartial">0</span>)</div>
+                <div class="tab-btn" id="tabReceived" onclick="switchTab('received')">✅ Received (<span id="cReceived">0</span>)</div>
             </div>
 
             <div class="filter-wrapper">
-                <select id="supplierFilter" class="filter-select" onchange="resetPageAndRender()">
-                    <option value="ALL">All Suppliers</option>
-                </select>
-                <button class="btn-whatsapp" style="background:#4a5568;" onclick="copySupplierLink()">🔗 Copy Link</button>
-                <button class="btn-whatsapp" id="shareBtn" onclick="sharePhotos()">📤 Share</button>
+                <div class="filter-row">
+                    <select id="supplierFilter" class="filter-select" onchange="resetPageAndRender()">
+                        <option value="ALL">All Suppliers</option>
+                    </select>
+                </div>
+                <div id="lastSeenBadge" class="last-seen-badge">👀 Last Seen: Check Supplier</div>
+                <div class="filter-row">
+                    <button class="btn-action" style="background:#4a5568;" onclick="copySupplierLink()">🔗 Link</button>
+                    <button class="btn-action" style="background:var(--accent);" onclick="sharePhotos()">📤 Share</button>
+                    <button class="btn-action" id="pdfBtn" style="background:#e53e3e;" onclick="downloadPDF()">📄 PDF Catalog</button>
+                </div>
             </div>
 
             <div id="galleryContainer" class="photo-grid"></div>
             
-            <!-- Pagination Controls -->
             <div id="paginationControls" class="pagination-controls" style="display:none;">
                 <button id="prevBtn" onclick="changePage(-1)">⬅️ Prev</button>
-                <span id="pageInfo" class="page-info">Page 1 of 1</span>
+                <span id="pageInfo" style="font-size: 13px; font-weight: bold;">Page 1 of 1</span>
                 <button id="nextBtn" onclick="changePage(1)">Next ➡️</button>
             </div>
         </div>
-
-        <div class="footer">
-            <div class="footer-text">Developed by <br><span>Smit Babariya</span></div>
-            <button class="logout-btn" onclick="logoutAdmin()">🚪 Logout</button>
-        </div>
     </div>
 
-    <!-- Firebase + Vercel Backend API Integration -->
+    <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        const ADMIN_PASSWORD = "2199"; 
+        const ADMIN_PASSWORD = "5200"; 
 
         window.checkPin = function() {
-            const pin = document.getElementById('adminPin').value;
-            if(pin === ADMIN_PASSWORD) {
+            if(document.getElementById('adminPin').value === ADMIN_PASSWORD) {
                 localStorage.setItem('clothsync_admin_auth', 'success');
                 document.getElementById('loginOverlay').style.display = 'none';
                 document.getElementById('mainDashboard').style.display = 'block';
                 document.getElementById('orderDate').valueAsDate = new Date();
                 fetchCloudData();
-            } else {
-                document.getElementById('loginError').style.display = 'block';
-            }
+            } else { document.getElementById('loginError').style.display = 'block'; }
         };
 
-        window.logoutAdmin = function() {
-            localStorage.removeItem('clothsync_admin_auth');
-            location.reload(); 
-        };
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyBLe_HEFq_pGZ-vlTOhYhZ6O818vVAanSk",
-            authDomain: "cloth-sync.firebaseapp.com",
-            projectId: "cloth-sync",
-            storageBucket: "cloth-sync.firebasestorage.app",
-            messagingSenderId: "346627401157",
-            appId: "1:346627401157:web:9f058d28c360fd2e9b97ac",
-            measurementId: "G-6DMDEZRDS1"
-        };
-
+        const firebaseConfig = { apiKey: "AIzaSyBLe_HEFq_pGZ-vlTOhYhZ6O818vVAanSk", authDomain: "cloth-sync.firebaseapp.com", projectId: "cloth-sync", storageBucket: "cloth-sync.firebasestorage.app", messagingSenderId: "346627401157", appId: "1:346627401157:web:9f058d28c360fd2e9b97ac", measurementId: "G-6DMDEZRDS1" };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
         let currentTab = 'pending';
         let savedSuppliersList = [];
         let allCloudPhotos = [];
-        
-        // --- Pagination Variables ---
-        let currentPage = 1;
-        const itemsPerPage = 20; // તમે અહી 20 ની જગ્યાએ 50 પણ કરી શકો છો
+        let currentPage = 1; const itemsPerPage = 20;
 
         window.onload = async function() {
             if(localStorage.getItem('clothsync_admin_auth') === 'success') {
@@ -257,59 +211,35 @@
                 document.getElementById('mainDashboard').style.display = 'block';
                 document.getElementById('orderDate').valueAsDate = new Date();
                 await fetchCloudData();
-            } else {
-                document.getElementById('loginOverlay').style.display = 'flex';
-                document.getElementById('mainDashboard').style.display = 'none';
             }
         };
 
         window.switchTab = function(tabName) {
-            currentTab = tabName;
-            currentPage = 1; // ટેબ બદલાય એટલે પેજ 1 પર આવી જાય
+            currentTab = tabName; currentPage = 1;
             document.getElementById('tabPending').classList.remove('active');
+            document.getElementById('tabPartial').classList.remove('active');
             document.getElementById('tabReceived').classList.remove('active');
+            
             if(tabName === 'pending') document.getElementById('tabPending').classList.add('active');
+            else if(tabName === 'partial') document.getElementById('tabPartial').classList.add('active');
             else document.getElementById('tabReceived').classList.add('active');
             renderGallery();
         };
 
-        window.resetPageAndRender = function() {
-            currentPage = 1;
-            renderGallery();
-        };
-
-        window.changePage = function(direction) {
-            currentPage += direction;
-            renderGallery();
-            // Scroll slightly up smoothly
-            document.querySelector('.tabs').scrollIntoView({ behavior: 'smooth' });
-        };
-
+        window.resetPageAndRender = function() { currentPage = 1; renderGallery(); };
+        window.changePage = function(dir) { currentPage += dir; renderGallery(); document.querySelector('.tabs').scrollIntoView({ behavior: 'smooth' }); };
         window.handleSupplierSelection = function() {
             const select = document.getElementById('supplierSelect');
             const newBox = document.getElementById('newSupplierBox');
-            if (select.value === 'NEW_SUPPLIER') {
-                newBox.style.display = 'block';
-                document.getElementById('newSupplierInput').focus();
-            } else {
-                newBox.style.display = 'none';
-                document.getElementById('newSupplierInput').value = '';
-            }
+            if (select.value === 'NEW_SUPPLIER') { newBox.style.display = 'block'; document.getElementById('newSupplierInput').focus(); } 
+            else { newBox.style.display = 'none'; document.getElementById('newSupplierInput').value = ''; }
         };
 
-        function showLoader(show) {
-            document.getElementById('loaderOverlay').style.display = show ? 'flex' : 'none';
-        }
+        function showLoader(show) { document.getElementById('loaderOverlay').style.display = show ? 'flex' : 'none'; }
 
         async function deletePhotoFromGitHub(imagePath) {
             if (!imagePath) return;
-            try {
-                await fetch('/api/upload', {
-                    method: 'DELETE',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ path: imagePath })
-                });
-            } catch (e) { console.error("Vercel Delete Error:", e); }
+            try { await fetch('/api/upload', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: imagePath }) }); } catch (e) { }
         }
 
         async function fetchCloudData() {
@@ -319,80 +249,48 @@
                 const querySnapshot = await getDocs(q);
                 allCloudPhotos = [];
                 let tempSuppliers = JSON.parse(localStorage.getItem('clothsync_suppliers')) || [];
-                
-                let today = new Date();
-                let itemsToDelete = [];
+                let today = new Date(); let itemsToDelete = [];
 
                 querySnapshot.forEach((docSnap) => {
-                    let data = docSnap.data();
-                    let id = docSnap.id;
-
+                    let data = docSnap.data(); let id = docSnap.id;
                     if (data.status === 'received' && data.receivedDate) {
-                        let recDate = new Date(data.receivedDate);
-                        let diffDays = (today - recDate) / (1000 * 60 * 60 * 24);
-
-                        if (diffDays > 60) {
-                            itemsToDelete.push({ id: id, path: data.imagePath });
-                            return;
-                        }
+                        let diffDays = (today - new Date(data.receivedDate)) / (1000 * 60 * 60 * 24);
+                        if (diffDays > 60) { itemsToDelete.push({ id: id, path: data.imagePath }); return; }
                     }
-
                     allCloudPhotos.push({ id: id, ...data });
-                    if(data.supplier && !tempSuppliers.includes(data.supplier)) {
-                        tempSuppliers.push(data.supplier);
-                    }
+                    if(data.supplier && !tempSuppliers.includes(data.supplier)) tempSuppliers.push(data.supplier);
                 });
 
-                for (let item of itemsToDelete) {
-                    await deletePhotoFromGitHub(item.path);
-                    await deleteDoc(doc(db, "orders", item.id));
-                }
+                for (let item of itemsToDelete) { await deletePhotoFromGitHub(item.path); await deleteDoc(doc(db, "orders", item.id)); }
 
                 savedSuppliersList = [...new Set(tempSuppliers)].filter(s => s && s.trim() !== "");
                 localStorage.setItem('clothsync_suppliers', JSON.stringify(savedSuppliersList));
                 
-                updateSupplierDropdown();
-                updateSupplierFilterOptions();
-                renderGallery();
-            } catch (error) {
-                console.error("Fetch/Clean Error: ", error);
-            }
+                updateSupplierDropdown(); updateSupplierFilterOptions(); renderGallery();
+            } catch (error) { console.error(error); }
             showLoader(false);
         }
 
         function updateSupplierDropdown() {
-            const select = document.getElementById('supplierSelect');
             let html = '<option value="">-- Choose Supplier --</option>';
-            savedSuppliersList.forEach(supp => { html += `<option value="${supp}">${supp}</option>`; });
+            savedSuppliersList.forEach(s => html += `<option value="${s}">${s}</option>`);
             html += '<option value="NEW_SUPPLIER" style="font-weight:bold; color:var(--accent);">+ Add New Supplier</option>';
-            select.innerHTML = html;
+            document.getElementById('supplierSelect').innerHTML = html;
         }
 
         function updateSupplierFilterOptions() {
-            let filterSelect = document.getElementById('supplierFilter');
-            let currentFilter = filterSelect.value || 'ALL';
+            let filter = document.getElementById('supplierFilter').value || 'ALL';
             let html = '<option value="ALL">All Suppliers</option>';
-            savedSuppliersList.forEach(supp => {
-                let selected = (supp === currentFilter) ? 'selected' : '';
-                html += `<option value="${supp}" ${selected}>${supp}</option>`;
-            });
-            filterSelect.innerHTML = html;
+            savedSuppliersList.forEach(s => html += `<option value="${s}" ${s===filter?'selected':''}>${s}</option>`);
+            document.getElementById('supplierFilter').innerHTML = html;
         }
 
-        function getTodayDateString() {
-            const today = new Date();
-            const yyyy = today.getFullYear();
-            const mm = String(today.getMonth() + 1).padStart(2, '0');
-            const dd = String(today.getDate()).padStart(2, '0');
-            return `${yyyy}-${mm}-${dd}`;
-        }
-
-        function compressImage(file) {
+        // --- Watermark & Compression ---
+        function compressImage(file, supplierName) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
                 reader.onload = function(event) {
-                    const img = new Image();
-                    img.src = event.target.result;
+                    const img = new Image(); img.src = event.target.result;
                     img.onload = function() {
                         const canvas = document.createElement('canvas');
                         let width = img.width; let height = img.height;
@@ -402,6 +300,14 @@
                         canvas.width = width; canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
+                        
+                        // Draw Watermark
+                        ctx.font = "bold 24px Inter, Arial";
+                        ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+                        ctx.shadowColor = "rgba(0, 0, 0, 0.8)";
+                        ctx.shadowBlur = 5;
+                        ctx.fillText(`© Cloth.sync - ${supplierName}`, 15, height - 20);
+                        
                         resolve(canvas.toDataURL('image/jpeg', 0.6));
                     };
                 };
@@ -410,274 +316,193 @@
         }
 
         window.addPhotos = async function(event) {
-            const files = event.target.files;
-            const selectedDate = document.getElementById('orderDate').value;
-            const suppSelect = document.getElementById('supplierSelect').value;
-            const suppInput = document.getElementById('newSupplierInput').value.trim();
-            const btnText = document.getElementById('uploadBtnText');
-            
+            const files = event.target.files; const selDate = document.getElementById('orderDate').value;
+            const suppSelect = document.getElementById('supplierSelect').value; const suppInput = document.getElementById('newSupplierInput').value.trim();
             if (!files || files.length === 0) return;
-            if (suppSelect === "") { alert("Please select a Supplier first!"); return; }
+            if (suppSelect === "") { alert("Select a Supplier!"); return; }
 
             let finalSupplier = suppSelect;
             if (suppSelect === "NEW_SUPPLIER") {
-                if(suppInput === "") { alert("Please enter New Supplier name!"); return; }
+                if(suppInput === "") { alert("Enter New Supplier name!"); return; }
                 finalSupplier = suppInput;
-                if (!savedSuppliersList.includes(finalSupplier)) {
-                    savedSuppliersList.push(finalSupplier);
-                    localStorage.setItem('clothsync_suppliers', JSON.stringify(savedSuppliersList));
-                    updateSupplierDropdown();
-                }
-                document.getElementById('supplierSelect').value = finalSupplier;
-                document.getElementById('newSupplierBox').style.display = 'none';
+                if (!savedSuppliersList.includes(finalSupplier)) { savedSuppliersList.push(finalSupplier); localStorage.setItem('clothsync_suppliers', JSON.stringify(savedSuppliersList)); updateSupplierDropdown(); }
+                document.getElementById('supplierSelect').value = finalSupplier; document.getElementById('newSupplierBox').style.display = 'none';
             }
+            if (!selDate) { alert("Select Date!"); return; }
 
-            if (!selectedDate) { alert("Select Order Date!"); return; }
-
-            btnText.innerText = `⏳ Uploading to Cloud (0/${files.length})...`;
-            
+            const btnText = document.getElementById('uploadBtnText');
             try {
                 for (let i = 0; i < files.length; i++) {
                     btnText.innerText = `⏳ Uploading (${i+1}/${files.length})...`;
-                    let base64Full = await compressImage(files[i]);
+                    let base64Full = await compressImage(files[i], finalSupplier); // Apply watermark
                     let base64Data = base64Full.split(',')[1];
-
                     let fileName = `uploads/img_${Date.now()}_${Math.floor(Math.random()*1000)}.jpg`;
                     
-                    const ghResponse = await fetch('/api/upload', {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            filename: fileName,
-                            content: base64Data,
-                            message: "Upload order photo via Cloth.sync"
-                        })
-                    });
+                    const ghRes = await fetch('/api/upload', { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ filename: fileName, content: base64Data, message: "Upload watermarked photo" }) });
+                    const ghData = await ghRes.json();
+                    if (!ghRes.ok) throw new Error("Upload Failed");
 
-                    const ghData = await ghResponse.json();
-
-                    if (!ghResponse.ok) {
-                        alert("Upload Error: " + (ghData.error || "Failed"));
-                        return;
-                    }
-
-                    if(ghResponse.ok) {
-                        let downloadURL = ghData.content.download_url;
-
-                        const docRef = await addDoc(collection(db, "orders"), {
-                            supplier: finalSupplier,
-                            orderDate: selectedDate,
-                            receivedDate: null,
-                            imageURL: downloadURL,
-                            imagePath: fileName,
-                            status: 'pending',
-                            timestamp: Date.now()
-                        });
-
-                        allCloudPhotos.push({
-                            id: docRef.id,
-                            supplier: finalSupplier,
-                            orderDate: selectedDate,
-                            receivedDate: null,
-                            imageURL: downloadURL,
-                            imagePath: fileName,
-                            status: 'pending',
-                            timestamp: Date.now()
-                        });
-                    }
+                    const docRef = await addDoc(collection(db, "orders"), { supplier: finalSupplier, orderDate: selDate, receivedDate: null, imageURL: ghData.content.download_url, imagePath: fileName, status: 'pending', timestamp: Date.now() });
+                    allCloudPhotos.push({ id: docRef.id, supplier: finalSupplier, orderDate: selDate, receivedDate: null, imageURL: ghData.content.download_url, imagePath: fileName, status: 'pending', timestamp: Date.now() });
                 }
-                updateSupplierFilterOptions();
-                resetPageAndRender(); // રિફ્રેશ થાય એટલે પેજ 1 પર નવો ફોટો દેખાય
-            } catch (error) {
-                console.error(error);
-                alert("Upload failed. Check your network or settings.");
-            } finally {
-                btnText.innerText = "📸 Add Photos to Pending";
-                document.getElementById('itemPhoto').value = "";
-            }
+                updateSupplierFilterOptions(); resetPageAndRender();
+            } catch (error) { alert("Upload failed."); } 
+            finally { btnText.innerText = "📸 Add Photos (Watermarked)"; document.getElementById('itemPhoto').value = ""; }
         };
 
         window.changeStatus = async function(id, newStatus) {
             showLoader(true);
             try {
-                const docRef = doc(db, "orders", id);
-                let recDate = newStatus === 'received' ? getTodayDateString() : null;
-                await updateDoc(docRef, { status: newStatus, receivedDate: recDate });
-                
-                let index = allCloudPhotos.findIndex(item => item.id === id);
-                if(index !== -1) {
-                    allCloudPhotos[index].status = newStatus;
-                    allCloudPhotos[index].receivedDate = recDate;
-                }
+                let recDate = newStatus === 'received' ? new Date().toISOString().split('T')[0] : null;
+                await updateDoc(doc(db, "orders", id), { status: newStatus, receivedDate: recDate });
+                let idx = allCloudPhotos.findIndex(item => item.id === id);
+                if(idx !== -1) { allCloudPhotos[idx].status = newStatus; allCloudPhotos[idx].receivedDate = recDate; }
                 renderGallery();
             } catch (e) { console.error(e); }
             showLoader(false);
         };
 
         window.deletePhoto = async function(id) {
-            let confirmDel = confirm("Delete this order record permanently?");
-            if (confirmDel) {
+            if (confirm("Delete this order?")) {
                 showLoader(true);
                 try {
                     let item = allCloudPhotos.find(i => i.id === id);
-                    if (item && item.imagePath) {
-                        await deletePhotoFromGitHub(item.imagePath);
-                    }
+                    if (item && item.imagePath) await deletePhotoFromGitHub(item.imagePath);
                     await deleteDoc(doc(db, "orders", id));
-                    allCloudPhotos = allCloudPhotos.filter(i => i.id !== id);
-                    renderGallery();
-                } catch (e) { console.error(e); }
-                showLoader(false);
+                    allCloudPhotos = allCloudPhotos.filter(i => i.id !== id); renderGallery();
+                } catch (e) { } showLoader(false);
             }
         };
 
+        // --- Read Receipt logic inside renderGallery ---
         window.renderGallery = function() {
             const container = document.getElementById('galleryContainer');
             const paginationDiv = document.getElementById('paginationControls');
             let filterSelect = document.getElementById('supplierFilter').value;
-            let todayStr = getTodayDateString();
-            let todayObj = new Date();
+            let todayStr = new Date().toISOString().split('T')[0];
 
-            let pendingCount = allCloudPhotos.filter(i => i.status === 'pending').length;
-            let receivedCount = allCloudPhotos.filter(i => i.status === 'received').length;
-            document.getElementById('countPending').innerText = pendingCount;
-            document.getElementById('countReceived').innerText = receivedCount;
+            document.getElementById('cPending').innerText = allCloudPhotos.filter(i => i.status === 'pending').length;
+            document.getElementById('cPartial').innerText = allCloudPhotos.filter(i => i.status === 'partial').length;
+            document.getElementById('cReceived').innerText = allCloudPhotos.filter(i => i.status === 'received').length;
 
-            container.innerHTML = "";
+            // Fetch Last Seen for Blue Tick
+            const lastSeenBadge = document.getElementById('lastSeenBadge');
+            if(filterSelect !== 'ALL') {
+                getDoc(doc(db, "supplier_views", filterSelect)).then(d => {
+                    if(d.exists() && d.data().lastSeen) {
+                        lastSeenBadge.innerHTML = `👀 Last Seen: ${new Date(d.data().lastSeen).toLocaleString('en-IN')}`;
+                    } else { lastSeenBadge.innerHTML = `👀 Last Seen: Never opened`; }
+                    lastSeenBadge.style.display = 'block';
+                });
+            } else { lastSeenBadge.style.display = 'none'; }
 
             let displayPhotos = allCloudPhotos.filter(item => item.status === currentTab);
-            if(filterSelect !== 'ALL') {
-                displayPhotos = displayPhotos.filter(item => item.supplier === filterSelect);
-            }
+            if(filterSelect !== 'ALL') displayPhotos = displayPhotos.filter(item => item.supplier === filterSelect);
 
-            if(displayPhotos.length === 0) {
-                container.innerHTML = `<div class="empty-state">No photos found for this selection.</div>`;
-                paginationDiv.style.display = "none";
-                return;
-            }
+            if(displayPhotos.length === 0) { container.innerHTML = `<div class="empty-state">No photos found.</div>`; paginationDiv.style.display = "none"; return; }
 
-            // 1. સોર્ટિંગ (લેટેસ્ટ ઉપર)
             displayPhotos.sort((a, b) => b.timestamp - a.timestamp);
 
-            // 2. પેજીનેશન લોજીક (Pagination Logic)
-            let totalItems = displayPhotos.length;
-            let totalPages = Math.ceil(totalItems / itemsPerPage);
+            let totalPages = Math.ceil(displayPhotos.length / itemsPerPage);
             if(currentPage > totalPages) currentPage = totalPages;
-            if(currentPage < 1) currentPage = 1;
+            let paginated = displayPhotos.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-            let startIndex = (currentPage - 1) * itemsPerPage;
-            let paginatedPhotos = displayPhotos.slice(startIndex, startIndex + itemsPerPage);
+            if(displayPhotos.length > itemsPerPage) {
+                paginationDiv.style.display = "flex"; document.getElementById('pageInfo').innerText = `Page ${currentPage} of ${totalPages}`;
+                document.getElementById('prevBtn').disabled = (currentPage === 1); document.getElementById('nextBtn').disabled = (currentPage === totalPages);
+            } else { paginationDiv.style.display = "none"; }
 
-            // પેજીનેશન બટન બતાવવા કે છુપાવવા
-            if(totalItems > itemsPerPage) {
-                paginationDiv.style.display = "flex";
-                document.getElementById('pageInfo').innerText = `Page ${currentPage} of ${totalPages}`;
-                document.getElementById('prevBtn').disabled = (currentPage === 1);
-                document.getElementById('nextBtn').disabled = (currentPage === totalPages);
-            } else {
-                paginationDiv.style.display = "none";
-            }
-
-            // 3. કાર્ડ પ્રિન્ટ કરવા
-            let lastDate = null;
+            container.innerHTML = ""; let lastDate = null;
             
-            paginatedPhotos.forEach(item => {
+            paginated.forEach(item => {
                 let dateKey = (currentTab === 'received' && item.receivedDate) ? item.receivedDate : (item.orderDate || "No Date");
-                
-                // ડેટ હેડર (Date Header)
                 if (dateKey !== lastDate) {
-                    let displayDate = dateKey === "No Date" ? "Unknown Date" : new Date(dateKey).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-                    let dateLabel = currentTab === 'received' ? "Date Received:" : "Order Date:";
-                    container.innerHTML += `
-                        <div class="date-header" style="grid-column: span 2;">
-                            <span>📅 ${displayDate}</span>
-                            <span class="date-label-badge">${dateLabel}</span>
-                        </div>
-                    `;
+                    let dispD = dateKey === "No Date" ? "Unknown Date" : new Date(dateKey).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+                    container.innerHTML += `<div class="date-header" style="grid-column:span 2; font-size:12px; font-weight:bold; background:#e2e8f0; padding:5px; border-radius:4px; text-align:center;">📅 ${dispD}</div>`;
                     lastDate = dateKey;
                 }
 
-                // ✨ NEW Badge લોજીક
-                let newBadgeHTML = "";
-                if (dateKey === todayStr) {
-                    newBadgeHTML = `<div class="badge-new">✨ NEW</div>`;
-                }
-
-                // ⚠️ Late Warning લોજીક (જો 15 દિવસથી વધુ જૂનો હોય)
-                let lateClass = "";
-                let lateTextHTML = "";
-                if (currentTab === 'pending' && item.orderDate) {
-                    let ordDateObj = new Date(item.orderDate);
-                    let diffDays = (todayObj - ordDateObj) / (1000 * 60 * 60 * 24);
-                    if (diffDays > 15) {
-                        lateClass = "late-warning-card";
-                        lateTextHTML = `<div class="late-text">⚠️ 15+ Days Late</div>`;
+                let newBadge = (dateKey === todayStr) ? `<div class="badge-new">✨ NEW</div>` : "";
+                let lateClass = "", lateText = "";
+                if ((currentTab === 'pending' || currentTab === 'partial') && item.orderDate) {
+                    if ((new Date() - new Date(item.orderDate)) / 86400000 > 15) {
+                        lateClass = "late-warning-card"; lateText = `<div class="late-text">⚠️ 15+ Days Late</div>`;
                     }
                 }
 
                 let actionBtn = "";
-                let originalOrdInfo = "";
-                
-                if(currentTab === 'pending') {
-                    actionBtn = `<div class="btn-row"><button class="btn-status btn-receive" onclick="changeStatus('${item.id}', 'received')">✅ Mark Received</button></div>`;
+                if(currentTab === 'pending' || currentTab === 'partial') {
+                    actionBtn = `
+                        <div class="btn-row">
+                            <button class="btn-status btn-receive" onclick="changeStatus('${item.id}', 'received')">✅ Rcvd</button>
+                            ${currentTab === 'pending' ? `<button class="btn-status btn-partial" onclick="changeStatus('${item.id}', 'partial')">⚠️ Half</button>` : ''}
+                        </div>
+                    `;
                 } else {
-                    actionBtn = `<div class="btn-row"><button class="btn-status btn-undo" onclick="changeStatus('${item.id}', 'pending')">⏳ Move to Pending</button></div>`;
-                    let ordDateFormatted = item.orderDate ? new Date(item.orderDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
-                    originalOrdInfo = `<div class="original-date">Ord: ${ordDateFormatted}</div>`;
+                    actionBtn = `<div class="btn-row"><button class="btn-status btn-undo" onclick="changeStatus('${item.id}', 'pending')">⏳ Move Pending</button></div>`;
                 }
 
-                const cardHTML = `
+                container.innerHTML += `
                     <div class="photo-card ${lateClass}">
                         <div class="badge-supplier">${item.supplier}</div>
-                        ${newBadgeHTML}
-                        <img src="${item.imageURL}" class="photo-img" alt="Order Photo" loading="lazy">
+                        ${newBadge}
+                        <img src="${item.imageURL}" class="photo-img" loading="lazy">
                         <button class="btn-delete" onclick="deletePhoto('${item.id}')">X</button>
                         <div class="action-bar">
-                            ${lateTextHTML}
-                            ${originalOrdInfo}
+                            ${lateText}
+                            <div class="original-date">Ord: ${item.orderDate || ''}</div>
                             ${actionBtn}
                         </div>
                     </div>
                 `;
-                container.innerHTML += cardHTML;
             });
         };
-        
-        window.copySupplierLink = function() {
+
+        // --- PDF Catalogue Generator ---
+        window.downloadPDF = async function() {
             let supp = document.getElementById('supplierFilter').value;
-            if(supp === 'ALL' || supp === "") { 
-                alert("Please select a specific Supplier from the dropdown first!"); 
-                return; 
-            }
-            let link = window.location.origin + '/supplier.html?name=' + encodeURIComponent(supp);
-            navigator.clipboard.writeText(link);
-            alert("✅ Link Copied!\nSend this link to " + supp);
-        };
+            if(supp === 'ALL' || supp === "") { alert("Please select a specific supplier from the dropdown first to generate their PDF."); return; }
+            
+            let pendingItems = allCloudPhotos.filter(i => i.supplier === supp && (i.status === 'pending' || i.status === 'partial'));
+            if(pendingItems.length === 0) { alert("No pending items for this supplier!"); return; }
 
-        window.sharePhotos = async function() {
-            let filterSelect = document.getElementById('supplierFilter').value;
-            let filteredPhotos = allCloudPhotos.filter(item => item.status === currentTab);
-            if(filterSelect !== 'ALL') { filteredPhotos = filteredPhotos.filter(item => item.supplier === filterSelect); }
-            if (filteredPhotos.length === 0) { alert("No photos to share!"); return; }
-
-            const shareBtn = document.getElementById('shareBtn');
-            shareBtn.innerText = "⏳ Prep...";
-            shareBtn.disabled = true;
+            const btn = document.getElementById('pdfBtn');
+            btn.innerText = "⏳ Generating PDF..."; btn.disabled = true;
 
             try {
-                let fileArray = [];
-                for (let i = 0; i < filteredPhotos.length; i++) {
-                    const res = await fetch(filteredPhotos[i].imageURL);
-                    const blob = await res.blob();
-                    fileArray.push(new File([blob], `item_${i+1}.jpeg`, { type: 'image/jpeg' }));
-                }
+                const { jsPDF } = window.jspdf; const doc = new jsPDF();
+                doc.setFont("helvetica", "bold"); doc.setFontSize(22); doc.text("Cloth.sync - Pending Catalogue", 15, 20);
+                doc.setFontSize(14); doc.setFont("helvetica", "normal");
+                doc.text(`Supplier: ${supp}`, 15, 30); doc.text(`Date Generated: ${new Date().toLocaleDateString('en-IN')}`, 15, 38);
+                doc.text(`Total Pending/Partial Designs: ${pendingItems.length}`, 15, 46);
+                doc.line(15, 50, 195, 50);
 
-                let shareText = currentTab === 'received' ? `*Cloth.sync Update:* We have received these designs successfully.` : `*Cloth.sync Update:* These designs are still pending.`;
-                if (navigator.canShare && navigator.canShare({ files: fileArray })) {
-                    await navigator.share({ files: fileArray, title: 'Cloth.sync Update', text: shareText });
-                } else { alert("Sharing not supported on this device."); }
-            } catch (e) { console.error(e); } 
-            finally { shareBtn.innerText = "📤 Share"; shareBtn.disabled = false; }
+                let yPos = 60; let xPos = 15;
+                for(let i=0; i<pendingItems.length; i++) {
+                    let res = await fetch(pendingItems[i].imageURL); let blob = await res.blob();
+                    let dataUrl = await new Promise(r => { let reader = new FileReader(); reader.onloadend = () => r(reader.result); reader.readAsDataURL(blob); });
+                    
+                    if(yPos > 240) { doc.addPage(); yPos = 20; xPos = 15; }
+                    
+                    doc.addImage(dataUrl, 'JPEG', xPos, yPos, 45, 60); // 3:4 aspect
+                    doc.setFontSize(10);
+                    let ordStr = "#CS-" + pendingItems[i].id.substring(0, 5).toUpperCase();
+                    doc.text(`ID: ${ordStr}`, xPos, yPos + 65);
+                    doc.text(`Date: ${pendingItems[i].orderDate}`, xPos, yPos + 70);
+                    if(pendingItems[i].status === 'partial') { doc.setTextColor(214, 158, 46); doc.text(`(Partial)`, xPos, yPos + 75); doc.setTextColor(0,0,0); }
+
+                    xPos += 60; if(xPos > 180) { xPos = 15; yPos += 85; }
+                }
+                doc.save(`Pending_Catalogue_${supp}.pdf`);
+            } catch (e) { alert("Error generating PDF"); console.error(e); } 
+            finally { btn.innerText = "📄 PDF Catalog"; btn.disabled = false; }
+        };
+
+        window.copySupplierLink = function() {
+            let s = document.getElementById('supplierFilter').value;
+            if(s === 'ALL' || !s) { alert("Select Supplier first!"); return; }
+            navigator.clipboard.writeText(window.location.origin + '/supplier.html?name=' + encodeURIComponent(s));
+            alert("✅ Link Copied!");
         };
     </script>
 </body>
