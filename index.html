@@ -70,9 +70,23 @@
 
         .photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         
-        .photo-card { position: relative; border-radius: 8px; overflow: hidden; border: 1px solid var(--secondary); background: #000; aspect-ratio: 3/4; }
+        .photo-card { position: relative; border-radius: 8px; overflow: hidden; border: 1px solid var(--secondary); background: #000; aspect-ratio: 3/4; transition: 0.3s; }
         .photo-img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0.9; }
+        
         .badge-supplier { position: absolute; top: 5px; left: 5px; background: rgba(26, 54, 93, 0.85); color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; z-index: 2; max-width: 80%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* ====== NEW FEATURES CSS ====== */
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
+        .badge-new { position: absolute; top: 32px; left: 5px; background: #e53e3e; color: white; padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: 800; z-index: 2; animation: pulse 1.5s infinite; box-shadow: 0 2px 5px rgba(229, 62, 62, 0.5); }
+        
+        .late-warning-card { border: 2px solid #e53e3e !important; box-shadow: 0 0 12px rgba(229, 62, 62, 0.4); }
+        .late-text { font-size: 10px; color: #fff; font-weight: 800; background: #e53e3e; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.5px; animation: pulse 2s infinite;}
+
+        .pagination-controls { grid-column: span 2; display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding: 15px; background: #f8fafc; border-radius: 8px; border: 1px solid var(--secondary); }
+        .pagination-controls button { padding: 8px 15px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .pagination-controls button:disabled { background: var(--secondary); color: var(--text-muted); cursor: not-allowed; }
+        .page-info { font-size: 13px; font-weight: 700; color: var(--text-main); }
+        /* ============================== */
 
         .action-bar { position: absolute; bottom: 0; left: 0; width: 100%; padding: 6px; background: linear-gradient(transparent, rgba(0,0,0,0.85)); display: flex; gap: 4px; flex-direction: column; }
         .original-date { color: #cbd5e0; font-size: 10px; text-align: center; margin-bottom: 1px; font-weight: 600; }
@@ -168,7 +182,7 @@
             </div>
 
             <div class="filter-wrapper">
-                <select id="supplierFilter" class="filter-select" onchange="renderGallery()">
+                <select id="supplierFilter" class="filter-select" onchange="resetPageAndRender()">
                     <option value="ALL">All Suppliers</option>
                 </select>
                 <button class="btn-whatsapp" style="background:#4a5568;" onclick="copySupplierLink()">🔗 Copy Link</button>
@@ -176,6 +190,13 @@
             </div>
 
             <div id="galleryContainer" class="photo-grid"></div>
+            
+            <!-- Pagination Controls -->
+            <div id="paginationControls" class="pagination-controls" style="display:none;">
+                <button id="prevBtn" onclick="changePage(-1)">⬅️ Prev</button>
+                <span id="pageInfo" class="page-info">Page 1 of 1</span>
+                <button id="nextBtn" onclick="changePage(1)">Next ➡️</button>
+            </div>
         </div>
 
         <div class="footer">
@@ -189,9 +210,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // ==========================================
-        // અહી તમારો પાસવર્ડ લખો (તમે ગમે તે રાખી શકો છો)
-        // ==========================================
         const ADMIN_PASSWORD = "2199"; 
 
         window.checkPin = function() {
@@ -209,10 +227,9 @@
 
         window.logoutAdmin = function() {
             localStorage.removeItem('clothsync_admin_auth');
-            location.reload(); // પેજ રિફ્રેશ થશે અને પાછો પાસવર્ડ માંગશે
+            location.reload(); 
         };
 
-        // --- Firebase Config ---
         const firebaseConfig = {
             apiKey: "AIzaSyBLe_HEFq_pGZ-vlTOhYhZ6O818vVAanSk",
             authDomain: "cloth-sync.firebaseapp.com",
@@ -229,9 +246,12 @@
         let currentTab = 'pending';
         let savedSuppliersList = [];
         let allCloudPhotos = [];
+        
+        // --- Pagination Variables ---
+        let currentPage = 1;
+        const itemsPerPage = 20; // તમે અહી 20 ની જગ્યાએ 50 પણ કરી શકો છો
 
         window.onload = async function() {
-            // ચેક કરો કે લોગીન કરેલું છે કે નહિ
             if(localStorage.getItem('clothsync_admin_auth') === 'success') {
                 document.getElementById('loginOverlay').style.display = 'none';
                 document.getElementById('mainDashboard').style.display = 'block';
@@ -245,11 +265,24 @@
 
         window.switchTab = function(tabName) {
             currentTab = tabName;
+            currentPage = 1; // ટેબ બદલાય એટલે પેજ 1 પર આવી જાય
             document.getElementById('tabPending').classList.remove('active');
             document.getElementById('tabReceived').classList.remove('active');
             if(tabName === 'pending') document.getElementById('tabPending').classList.add('active');
             else document.getElementById('tabReceived').classList.add('active');
             renderGallery();
+        };
+
+        window.resetPageAndRender = function() {
+            currentPage = 1;
+            renderGallery();
+        };
+
+        window.changePage = function(direction) {
+            currentPage += direction;
+            renderGallery();
+            // Scroll slightly up smoothly
+            document.querySelector('.tabs').scrollIntoView({ behavior: 'smooth' });
         };
 
         window.handleSupplierSelection = function() {
@@ -276,9 +309,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ path: imagePath })
                 });
-            } catch (e) {
-                console.error("Vercel Delete Error:", e);
-            }
+            } catch (e) { console.error("Vercel Delete Error:", e); }
         }
 
         async function fetchCloudData() {
@@ -456,7 +487,7 @@
                     }
                 }
                 updateSupplierFilterOptions();
-                renderGallery();
+                resetPageAndRender(); // રિફ્રેશ થાય એટલે પેજ 1 પર નવો ફોટો દેખાય
             } catch (error) {
                 console.error(error);
                 alert("Upload failed. Check your network or settings.");
@@ -502,7 +533,10 @@
 
         window.renderGallery = function() {
             const container = document.getElementById('galleryContainer');
+            const paginationDiv = document.getElementById('paginationControls');
             let filterSelect = document.getElementById('supplierFilter').value;
+            let todayStr = getTodayDateString();
+            let todayObj = new Date();
 
             let pendingCount = allCloudPhotos.filter(i => i.status === 'pending').length;
             let receivedCount = allCloudPhotos.filter(i => i.status === 'received').length;
@@ -518,54 +552,94 @@
 
             if(displayPhotos.length === 0) {
                 container.innerHTML = `<div class="empty-state">No photos found for this selection.</div>`;
+                paginationDiv.style.display = "none";
                 return;
             }
 
-            const groupedPhotos = {};
-            displayPhotos.forEach(photo => {
-                let dateKey = (currentTab === 'received' && photo.receivedDate) ? photo.receivedDate : (photo.orderDate || "No Date");
-                if (!groupedPhotos[dateKey]) { groupedPhotos[dateKey] = []; }
-                groupedPhotos[dateKey].push(photo);
-            });
+            // 1. સોર્ટિંગ (લેટેસ્ટ ઉપર)
+            displayPhotos.sort((a, b) => b.timestamp - a.timestamp);
 
-            const sortedDates = Object.keys(groupedPhotos).sort((a, b) => new Date(b) - new Date(a));
+            // 2. પેજીનેશન લોજીક (Pagination Logic)
+            let totalItems = displayPhotos.length;
+            let totalPages = Math.ceil(totalItems / itemsPerPage);
+            if(currentPage > totalPages) currentPage = totalPages;
+            if(currentPage < 1) currentPage = 1;
 
-            sortedDates.forEach(date => {
-                let displayDate = date === "No Date" ? "Unknown Date" : new Date(date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-                let dateLabel = currentTab === 'received' ? "Date Received:" : "Order Date:";
+            let startIndex = (currentPage - 1) * itemsPerPage;
+            let paginatedPhotos = displayPhotos.slice(startIndex, startIndex + itemsPerPage);
+
+            // પેજીનેશન બટન બતાવવા કે છુપાવવા
+            if(totalItems > itemsPerPage) {
+                paginationDiv.style.display = "flex";
+                document.getElementById('pageInfo').innerText = `Page ${currentPage} of ${totalPages}`;
+                document.getElementById('prevBtn').disabled = (currentPage === 1);
+                document.getElementById('nextBtn').disabled = (currentPage === totalPages);
+            } else {
+                paginationDiv.style.display = "none";
+            }
+
+            // 3. કાર્ડ પ્રિન્ટ કરવા
+            let lastDate = null;
+            
+            paginatedPhotos.forEach(item => {
+                let dateKey = (currentTab === 'received' && item.receivedDate) ? item.receivedDate : (item.orderDate || "No Date");
                 
-                container.innerHTML += `
-                    <div class="date-header" style="grid-column: span 2;">
-                        <span>📅 ${displayDate}</span>
-                        <span class="date-label-badge">${dateLabel}</span>
-                    </div>
-                `;
-                
-                groupedPhotos[date].sort((a, b) => b.timestamp - a.timestamp).forEach(item => {
-                    let actionBtn = "";
-                    let originalOrdInfo = "";
-                    
-                    if(currentTab === 'pending') {
-                        actionBtn = `<div class="btn-row"><button class="btn-status btn-receive" onclick="changeStatus('${item.id}', 'received')">✅ Mark as Received</button></div>`;
-                    } else {
-                        actionBtn = `<div class="btn-row"><button class="btn-status btn-undo" onclick="changeStatus('${item.id}', 'pending')">⏳ Move to Pending</button></div>`;
-                        let ordDateFormatted = item.orderDate ? new Date(item.orderDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
-                        originalOrdInfo = `<div class="original-date">Ord: ${ordDateFormatted}</div>`;
-                    }
-
-                    const cardHTML = `
-                        <div class="photo-card">
-                            <div class="badge-supplier">${item.supplier}</div>
-                            <img src="${item.imageURL}" class="photo-img" alt="Order Photo" loading="lazy">
-                            <button class="btn-delete" onclick="deletePhoto('${item.id}')">X</button>
-                            <div class="action-bar">
-                                ${originalOrdInfo}
-                                ${actionBtn}
-                            </div>
+                // ડેટ હેડર (Date Header)
+                if (dateKey !== lastDate) {
+                    let displayDate = dateKey === "No Date" ? "Unknown Date" : new Date(dateKey).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+                    let dateLabel = currentTab === 'received' ? "Date Received:" : "Order Date:";
+                    container.innerHTML += `
+                        <div class="date-header" style="grid-column: span 2;">
+                            <span>📅 ${displayDate}</span>
+                            <span class="date-label-badge">${dateLabel}</span>
                         </div>
                     `;
-                    container.innerHTML += cardHTML;
-                });
+                    lastDate = dateKey;
+                }
+
+                // ✨ NEW Badge લોજીક
+                let newBadgeHTML = "";
+                if (dateKey === todayStr) {
+                    newBadgeHTML = `<div class="badge-new">✨ NEW</div>`;
+                }
+
+                // ⚠️ Late Warning લોજીક (જો 15 દિવસથી વધુ જૂનો હોય)
+                let lateClass = "";
+                let lateTextHTML = "";
+                if (currentTab === 'pending' && item.orderDate) {
+                    let ordDateObj = new Date(item.orderDate);
+                    let diffDays = (todayObj - ordDateObj) / (1000 * 60 * 60 * 24);
+                    if (diffDays > 15) {
+                        lateClass = "late-warning-card";
+                        lateTextHTML = `<div class="late-text">⚠️ 15+ Days Late</div>`;
+                    }
+                }
+
+                let actionBtn = "";
+                let originalOrdInfo = "";
+                
+                if(currentTab === 'pending') {
+                    actionBtn = `<div class="btn-row"><button class="btn-status btn-receive" onclick="changeStatus('${item.id}', 'received')">✅ Mark Received</button></div>`;
+                } else {
+                    actionBtn = `<div class="btn-row"><button class="btn-status btn-undo" onclick="changeStatus('${item.id}', 'pending')">⏳ Move to Pending</button></div>`;
+                    let ordDateFormatted = item.orderDate ? new Date(item.orderDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
+                    originalOrdInfo = `<div class="original-date">Ord: ${ordDateFormatted}</div>`;
+                }
+
+                const cardHTML = `
+                    <div class="photo-card ${lateClass}">
+                        <div class="badge-supplier">${item.supplier}</div>
+                        ${newBadgeHTML}
+                        <img src="${item.imageURL}" class="photo-img" alt="Order Photo" loading="lazy">
+                        <button class="btn-delete" onclick="deletePhoto('${item.id}')">X</button>
+                        <div class="action-bar">
+                            ${lateTextHTML}
+                            ${originalOrdInfo}
+                            ${actionBtn}
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += cardHTML;
             });
         };
         
