@@ -4,374 +4,224 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Live Order Status | Cloth.sync</title>
+    <!-- PWA Setup -->
+    <link id="manifestLink" rel="manifest" href="">
+    <meta name="theme-color" content="#1e1e2d">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
-        :root {
-            --primary: #1e1e2d;
-            --bg-main: #f5f8fa;
-            --card-bg: #ffffff;
-            --text-dark: #181c32;
-            --text-muted: #a1a5b7;
-            --border-light: #eff2f5;
-            
-            /* Stats Colors */
-            --stat-total-bg: #ffffff;
-            --stat-total-text: #181c32;
-            --stat-pending-bg: #fff5f8;
-            --stat-pending-text: #f1416c;
-            --stat-received-bg: #e8fff3;
-            --stat-received-text: #50cd89;
-        }
-
+        :root { --primary: #1e1e2d; --bg-main: #f5f8fa; --card-bg: #ffffff; --text-dark: #181c32; --text-muted: #a1a5b7; --border-light: #eff2f5; --stat-pending-bg: #fff5f8; --stat-pending-text: #f1416c; --stat-received-bg: #e8fff3; --stat-received-text: #50cd89; --stat-partial-bg: #fff8e1; --stat-partial-text: #f57f17; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-
-        body { background-color: var(--bg-main); color: var(--text-dark); -webkit-font-smoothing: antialiased; }
-
-        /* ====== NAVBAR ====== */
-        .navbar { background: var(--card-bg); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-light); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
-        .nav-brand { font-size: 20px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 8px; }
-        .nav-profile { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; background: var(--bg-main); padding: 6px 12px; border-radius: 20px; }
+        body { background-color: var(--bg-main); color: var(--text-dark); }
         
-        /* ====== MAIN CONTAINER ====== */
+        .navbar { background: var(--card-bg); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-light); position: sticky; top: 0; z-index: 100; }
+        .nav-brand { font-size: 20px; font-weight: 800; color: var(--primary); }
+        .nav-profile { font-weight: 600; font-size: 14px; background: var(--bg-main); padding: 6px 12px; border-radius: 20px; }
+        
+        #installAppBtn { display: none; background: #ecc94b; color: #744210; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-right:10px; }
+
         .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
-        
-        /* ====== HEADER & STATS ====== */
         .page-header { margin-bottom: 25px; }
-        .page-title { font-size: 26px; font-weight: 800; margin-bottom: 5px; }
+        .page-title { font-size: 26px; font-weight: 800; }
         .page-subtitle { color: var(--text-muted); font-size: 14px; font-weight: 500; }
-        .page-subtitle span { color: var(--stat-pending-text); font-weight: 700; background: #fff0f4; padding: 2px 8px; border-radius: 6px; margin-left: 5px; text-transform: uppercase; }
 
-        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 30px; }
-        .stat-card { padding: 20px; border-radius: 12px; border: 1px solid var(--border-light); box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; flex-direction: column; justify-content: center; }
-        .stat-title { font-size: 14px; font-weight: 600; margin-bottom: 8px; color: var(--text-muted); }
-        .stat-value { font-size: 32px; font-weight: 800; line-height: 1; }
-        
-        .stat-card.total { background: var(--stat-total-bg); color: var(--stat-total-text); }
-        .stat-card.pending { background: var(--stat-pending-bg); border-color: #ffe2e5; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 25px; }
+        .stat-card { padding: 15px; border-radius: 12px; border: 1px solid var(--border-light); text-align: center; background: white; }
         .stat-card.pending .stat-value { color: var(--stat-pending-text); }
-        .stat-card.received { background: var(--stat-received-bg); border-color: #c9f7f5; }
+        .stat-card.partial .stat-value { color: var(--stat-partial-text); }
         .stat-card.received .stat-value { color: var(--stat-received-text); }
+        .stat-title { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+        .stat-value { font-size: 24px; font-weight: 800; }
 
-        /* ====== TABS ====== */
-        .tabs-container { display: flex; gap: 20px; border-bottom: 1px solid var(--border-light); margin-bottom: 25px; overflow-x: auto; white-space: nowrap; }
-        .tab-item { padding: 10px 5px; font-size: 15px; font-weight: 600; color: var(--text-muted); cursor: pointer; position: relative; transition: 0.3s; }
-        .tab-item:hover { color: var(--text-dark); }
-        .tab-item.active { color: var(--primary); }
-        .tab-item.active::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 3px; background: var(--primary); border-radius: 3px 3px 0 0; }
+        .tabs-container { display: flex; gap: 10px; border-bottom: 1px solid var(--border-light); margin-bottom: 25px; overflow-x: auto; }
+        .tab-item { padding: 10px; font-size: 14px; font-weight: 600; color: var(--text-muted); cursor: pointer; white-space: nowrap; }
+        .tab-item.active { color: var(--primary); border-bottom: 3px solid var(--primary); }
 
-        /* ====== PHOTO GRID & CARDS ====== */
-        .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-        
-        .product-card { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-light); overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: transform 0.2s; }
-        .product-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.06); }
-        
-        .img-wrapper { position: relative; width: 100%; aspect-ratio: 4/5; background: #f3f3f3; }
+        .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
+        .product-card { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-light); overflow: hidden; position: relative; }
+        .img-wrapper { width: 100%; aspect-ratio: 4/5; }
         .product-img { width: 100%; height: 100%; object-fit: cover; }
         
-        .badge { position: absolute; top: 12px; left: 12px; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; color: white; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .badge { position: absolute; top: 10px; left: 10px; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; color: white; }
         .badge.pending { background: #ff9800; }
+        .badge.partial { background: var(--stat-partial-text); }
         .badge.received { background: var(--stat-received-text); }
 
-        /* ====== NEW FEATURES CSS ====== */
         @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
+        .badge-new { position: absolute; top: 10px; right: 10px; background: #e53e3e; color: white; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 800; animation: pulse 1.5s infinite; }
+        .late-warning-card { border: 2px solid #e53e3e !important; box-shadow: 0 0 10px rgba(229,62,62,0.3); }
+
+        .card-details { padding: 12px; }
+        .order-id { font-size: 12px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 5px; }
+        .order-date { font-size: 11px; font-weight: 600; color: var(--text-dark); background: var(--bg-main); padding: 4px; border-radius: 4px; display: inline-block; }
+
+        .pagination-controls { display: flex; justify-content: space-between; margin-top: 25px; padding: 15px; background: white; border-radius: 8px; border: 1px solid var(--border-light); }
+        .pagination-controls button { padding: 8px 15px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .pagination-controls button:disabled { background: var(--text-muted); cursor: not-allowed; }
         
-        .badge-new { position: absolute; top: 12px; right: 12px; background: #e53e3e; color: white; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; z-index: 10; animation: pulse 1.5s infinite; box-shadow: 0 2px 5px rgba(229, 62, 62, 0.5); }
+        #loader { text-align: center; padding: 50px; font-weight: 700; color: var(--text-muted); }
         
-        .late-warning-card { border: 2px solid #e53e3e !important; box-shadow: 0 0 12px rgba(229, 62, 62, 0.3) !important; }
-        .late-text { font-size: 10px; color: #fff; font-weight: 800; background: #e53e3e; padding: 3px 6px; border-radius: 4px; display: inline-block; margin-top: 8px; text-transform: uppercase; animation: pulse 2s infinite; }
-
-        .pagination-controls { display: flex; justify-content: space-between; align-items: center; margin-top: 30px; padding: 15px 20px; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-light); box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
-        .pagination-controls button { padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .pagination-controls button:disabled { background: var(--secondary); color: var(--text-muted); cursor: not-allowed; }
-        .page-info { font-size: 14px; font-weight: 700; color: var(--text-dark); }
-        /* ============================== */
-
-        .card-details { padding: 15px; }
-        .order-id-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .order-id { font-size: 12px; font-weight: 700; color: var(--text-muted); }
-        .order-date { font-size: 12px; font-weight: 600; color: var(--text-dark); background: var(--bg-main); padding: 4px 8px; border-radius: 4px; }
-        .card-title { font-size: 15px; font-weight: 700; color: var(--text-dark); margin-bottom: 5px; }
-
-        .empty-state { text-align: center; padding: 50px 20px; grid-column: 1 / -1; color: var(--text-muted); font-size: 16px; font-weight: 600; background: var(--card-bg); border-radius: 12px; border: 1px dashed #ccc; }
-        #loader { text-align: center; padding: 60px; font-size: 18px; font-weight: 700; color: var(--text-muted); }
-
-        .footer { text-align: center; padding: 30px; font-size: 13px; color: var(--text-muted); font-weight: 500; }
-        .footer span { font-weight: 700; color: var(--primary); }
-
-        /* ====== MOBILE RESPONSIVENESS ====== */
         @media (max-width: 768px) {
-            .stats-grid { grid-template-columns: 1fr; gap: 10px; margin-bottom: 20px; }
-            .page-title { font-size: 22px; }
-            .photo-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-            .card-details { padding: 10px; }
-            .card-title { font-size: 13px; }
-            .order-id, .order-date { font-size: 10px; }
-            .badge { padding: 4px 8px; font-size: 10px; }
-            .pagination-controls button { padding: 8px 12px; font-size: 12px; }
-            .page-info { font-size: 12px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .photo-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Navbar -->
+    <script>
+        const manifest = { "name": "Supplier Portal", "short_name": "Supplier", "display": "standalone", "background_color": "#ffffff", "theme_color": "#1e1e2d", "icons": [{"src": "https://cdn-icons-png.flaticon.com/512/3159/3159614.png", "sizes": "512x512", "type": "image/png"}] };
+        const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+        document.getElementById('manifestLink').href = URL.createObjectURL(manifestBlob);
+        const swBlob = new Blob([`self.addEventListener('fetch', function(e) {});`], {type: 'application/javascript'});
+        navigator.serviceWorker.register(URL.createObjectURL(swBlob));
+        
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('installAppBtn').style.display = 'inline-block'; });
+        function installApp() { if(deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; document.getElementById('installAppBtn').style.display = 'none'; } }
+    </script>
+
     <div class="navbar">
         <div class="nav-brand">👕 Cloth.sync</div>
-        <div class="nav-profile">👤 <span id="navSupplierName">Loading...</span></div>
+        <div>
+            <button id="installAppBtn" onclick="installApp()">📲 Install App</button>
+            <span class="nav-profile">👤 <span id="navSupplierName">Loading...</span></span>
+        </div>
     </div>
 
     <div class="container">
-        <!-- Header -->
         <div class="page-header">
             <h1 class="page-title">Live Order Status</h1>
-            <p class="page-subtitle">Showing live updates for <span id="headerSupplierName">...</span></p>
+            <p class="page-subtitle">Updates for <strong id="headerSupplierName">...</strong></p>
         </div>
 
-        <!-- Dashboard Stats -->
         <div class="stats-grid" id="statsSection" style="display: none;">
-            <div class="stat-card total">
-                <div class="stat-title">Total Orders</div>
-                <div class="stat-value" id="valTotal">0</div>
-            </div>
-            <div class="stat-card pending">
-                <div class="stat-title">Pending Orders</div>
-                <div class="stat-value" id="valPending">0</div>
-            </div>
-            <div class="stat-card received">
-                <div class="stat-title">Received Orders</div>
-                <div class="stat-value" id="valReceived">0</div>
-            </div>
+            <div class="stat-card pending"><div class="stat-title">Pending</div><div class="stat-value" id="vPend">0</div></div>
+            <div class="stat-card partial"><div class="stat-title">Partial</div><div class="stat-value" id="vPart">0</div></div>
+            <div class="stat-card received"><div class="stat-title">Received</div><div class="stat-value" id="vRec">0</div></div>
+            <div class="stat-card total"><div class="stat-title">Total</div><div class="stat-value" id="vTot">0</div></div>
         </div>
 
-        <!-- Tabs -->
         <div class="tabs-container" id="tabSection" style="display: none;">
             <div class="tab-item active" id="tabAll" onclick="switchTab('all')">All Orders</div>
             <div class="tab-item" id="tabPending" onclick="switchTab('pending')">Pending</div>
+            <div class="tab-item" id="tabPartial" onclick="switchTab('partial')">Partial</div>
             <div class="tab-item" id="tabReceived" onclick="switchTab('received')">Received</div>
         </div>
 
-        <!-- Content -->
-        <div id="loader">⏳ Loading live data securely...</div>
+        <div id="loader">⏳ Fetching live data securely...</div>
         <div id="gallery" class="photo-grid"></div>
 
-        <!-- Pagination Controls -->
         <div id="paginationControls" class="pagination-controls" style="display:none;">
             <button id="prevBtn" onclick="changePage(-1)">⬅️ Prev</button>
-            <span id="pageInfo" class="page-info">Page 1 of 1</span>
+            <span id="pageInfo" style="font-weight: bold; font-size: 14px;">Page 1</span>
             <button id="nextBtn" onclick="changePage(1)">Next ➡️</button>
-        </div>
-
-        <div class="footer">
-            Developed by <span>Smit Babariya</span>
         </div>
     </div>
 
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, collection, query, where, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyBLe_HEFq_pGZ-vlTOhYhZ6O818vVAanSk",
-            authDomain: "cloth-sync.firebaseapp.com",
-            projectId: "cloth-sync",
-            storageBucket: "cloth-sync.firebasestorage.app",
-            messagingSenderId: "346627401157",
-            appId: "1:346627401157:web:9f058d28c360fd2e9b97ac",
-            measurementId: "G-6DMDEZRDS1"
-        };
+        const firebaseConfig = { apiKey: "AIzaSyBLe_HEFq_pGZ-vlTOhYhZ6O818vVAanSk", authDomain: "cloth-sync.firebaseapp.com", projectId: "cloth-sync", storageBucket: "cloth-sync.firebasestorage.app", messagingSenderId: "346627401157", appId: "1:346627401157:web:9f058d28c360fd2e9b97ac", measurementId: "G-6DMDEZRDS1" };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
         const urlParams = new URLSearchParams(window.location.search);
         const targetSupplier = urlParams.get('name');
         
-        let allPhotos = [];
-        let currentTab = 'all';
-        
-        // --- Pagination Variables ---
-        let currentPage = 1;
-        const itemsPerPage = 20;
+        let allPhotos = []; let currentTab = 'all'; let currentPage = 1; const itemsPerPage = 20;
 
         window.switchTab = function(tab) {
-            currentTab = tab;
-            currentPage = 1; // ટેબ બદલાય એટલે પાછું પેજ 1 થઈ જાય
-            
-            document.getElementById('tabAll').classList.remove('active');
-            document.getElementById('tabPending').classList.remove('active');
-            document.getElementById('tabReceived').classList.remove('active');
-            
-            if(tab === 'all') document.getElementById('tabAll').classList.add('active');
-            else if(tab === 'pending') document.getElementById('tabPending').classList.add('active');
-            else document.getElementById('tabReceived').classList.add('active');
-            
+            currentTab = tab; currentPage = 1;
+            ['tabAll','tabPending','tabPartial','tabReceived'].forEach(t => document.getElementById(t).classList.remove('active'));
+            document.getElementById(tab === 'all' ? 'tabAll' : 'tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
             renderPhotos();
         };
 
-        window.changePage = function(direction) {
-            currentPage += direction;
-            renderPhotos();
-            // સ્મૂથ ઉપર સ્ક્રોલ થવા માટે
-            document.getElementById('tabSection').scrollIntoView({ behavior: 'smooth' });
-        };
-
-        function getTodayDateString() {
-            const today = new Date();
-            const yyyy = today.getFullYear();
-            const mm = String(today.getMonth() + 1).padStart(2, '0');
-            const dd = String(today.getDate()).padStart(2, '0');
-            return `${yyyy}-${mm}-${dd}`;
-        }
+        window.changePage = function(dir) { currentPage += dir; renderPhotos(); document.getElementById('tabSection').scrollIntoView({ behavior: 'smooth' }); };
 
         async function fetchData() {
-            if (!targetSupplier) {
-                document.getElementById('navSupplierName').innerText = "Invalid Link";
-                document.getElementById('headerSupplierName').innerText = "Unknown";
-                document.getElementById('loader').innerText = "No supplier specified in the link.";
-                return;
-            }
-
+            if (!targetSupplier) { document.getElementById('loader').innerText = "Invalid Link"; return; }
             document.getElementById('navSupplierName').innerText = targetSupplier;
             document.getElementById('headerSupplierName').innerText = targetSupplier;
             
             try {
+                // 1. Update Read Receipt (Last Seen) for Admin
+                await setDoc(doc(db, "supplier_views", targetSupplier), { lastSeen: Date.now() });
+
+                // 2. Fetch Photos
                 const q = query(collection(db, "orders"), where("supplier", "==", targetSupplier));
                 const querySnapshot = await getDocs(q);
-                
-                querySnapshot.forEach((doc) => {
-                    allPhotos.push({ id: doc.id, ...doc.data() });
-                });
+                querySnapshot.forEach(doc => allPhotos.push({ id: doc.id, ...doc.data() }));
 
                 document.getElementById('loader').style.display = 'none';
                 document.getElementById('statsSection').style.display = 'grid';
                 document.getElementById('tabSection').style.display = 'flex';
                 
-                updateStats();
-                renderPhotos();
-            } catch (error) {
-                console.error(error);
-                document.getElementById('loader').innerText = "Failed to load data. Please refresh.";
-            }
-        }
+                document.getElementById('vTot').innerText = allPhotos.length;
+                document.getElementById('vPend').innerText = allPhotos.filter(i => i.status === 'pending').length;
+                document.getElementById('vPart').innerText = allPhotos.filter(i => i.status === 'partial').length;
+                document.getElementById('vRec').innerText = allPhotos.filter(i => i.status === 'received').length;
 
-        function updateStats() {
-            let pendingCount = allPhotos.filter(i => i.status === 'pending').length;
-            let receivedCount = allPhotos.filter(i => i.status === 'received').length;
-            
-            document.getElementById('valTotal').innerText = allPhotos.length;
-            document.getElementById('valPending').innerText = pendingCount;
-            document.getElementById('valReceived').innerText = receivedCount;
+                renderPhotos();
+            } catch (error) { document.getElementById('loader').innerText = "Failed to load data."; }
         }
 
         function renderPhotos() {
             const gallery = document.getElementById('gallery');
-            const paginationDiv = document.getElementById('paginationControls');
-            let todayStr = getTodayDateString();
-            let todayObj = new Date();
-
-            gallery.innerHTML = "";
-
-            let displayData = allPhotos;
-            if (currentTab !== 'all') {
-                displayData = allPhotos.filter(i => i.status === currentTab);
-            }
+            let dispData = currentTab === 'all' ? allPhotos : allPhotos.filter(i => i.status === currentTab);
             
-            // સોર્ટિંગ (લેટેસ્ટ ઉપર)
-            displayData.sort((a, b) => {
+            dispData.sort((a, b) => {
                 let timeB = b.receivedDate ? new Date(b.receivedDate).getTime() : b.timestamp;
                 let timeA = a.receivedDate ? new Date(a.receivedDate).getTime() : a.timestamp;
-                if (timeB !== timeA) return timeB - timeA;
-                return b.timestamp - a.timestamp; 
+                return timeB !== timeA ? timeB - timeA : b.timestamp - a.timestamp; 
             });
 
-            if(displayData.length === 0) {
-                gallery.innerHTML = `<div class="empty-state">No designs found in this category.</div>`;
-                paginationDiv.style.display = "none";
-                return;
-            }
+            if(dispData.length === 0) { gallery.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:30px; color:var(--text-muted);">No designs found.</div>`; document.getElementById('paginationControls').style.display = "none"; return; }
 
-            // --- Pagination Logic ---
-            let totalItems = displayData.length;
-            let totalPages = Math.ceil(totalItems / itemsPerPage);
-            if(currentPage > totalPages) currentPage = totalPages;
-            if(currentPage < 1) currentPage = 1;
+            let totalPages = Math.ceil(dispData.length / itemsPerPage);
+            let paginated = dispData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-            let startIndex = (currentPage - 1) * itemsPerPage;
-            let paginatedData = displayData.slice(startIndex, startIndex + itemsPerPage);
-
-            // બટન દેખાડવા કે છુપાવવા
-            if(totalItems > itemsPerPage) {
-                paginationDiv.style.display = "flex";
+            if(dispData.length > itemsPerPage) {
+                document.getElementById('paginationControls').style.display = "flex";
                 document.getElementById('pageInfo').innerText = `Page ${currentPage} of ${totalPages}`;
                 document.getElementById('prevBtn').disabled = (currentPage === 1);
                 document.getElementById('nextBtn').disabled = (currentPage === totalPages);
-            } else {
-                paginationDiv.style.display = "none";
-            }
+            } else { document.getElementById('paginationControls').style.display = "none"; }
 
-            // --- Card Rendering ---
-            paginatedData.forEach(item => {
-                let displayOrderDate = item.orderDate ? new Date(item.orderDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'No Date';
-                let shortOrderId = "#CS-" + item.id.substring(0, 6).toUpperCase(); 
+            gallery.innerHTML = "";
+            let today = new Date().toISOString().split('T')[0];
 
-                // ✨ NEW Badge લોજીક (જો માલ આજે જ ઓર્ડર કે રિસીવ થયો હોય)
-                let dateToCheck = (item.status === 'received' && item.receivedDate) ? item.receivedDate : item.orderDate;
-                let newBadgeHTML = (dateToCheck === todayStr) ? `<div class="badge-new">✨ NEW</div>` : "";
-
-                // ⚠️ Late Warning લોજીક (જો 15 દિવસથી વધુ જૂનો હોય)
-                let lateClass = "";
-                let lateTextHTML = "";
-                if (item.status === 'pending' && item.orderDate) {
-                    let ordDateObj = new Date(item.orderDate);
-                    let diffDays = (todayObj - ordDateObj) / (1000 * 60 * 60 * 24);
-                    if (diffDays > 15) {
-                        lateClass = "late-warning-card";
-                        lateTextHTML = `<div class="late-text">⚠️ 15+ Days Late</div>`;
-                    }
-                }
-
-                let badgeHTML = item.status === 'pending' 
-                    ? `<div class="badge pending">⏳ Pending</div>` 
-                    : `<div class="badge received">✅ Received</div>`;
+            paginated.forEach(item => {
+                let oDate = item.orderDate ? new Date(item.orderDate).toLocaleDateString('en-IN') : 'No Date';
+                let idStr = "#CS-" + item.id.substring(0, 6).toUpperCase(); 
                 
-                let receivedDateHTML = "";
-                if (item.status === 'received' && item.receivedDate) {
-                    let displayRecDate = new Date(item.receivedDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-                    receivedDateHTML = `
-                        <div class="order-id-row" style="margin-top: 8px; margin-bottom: 0;">
-                            <span style="font-size: 11px; color: var(--stat-received-text); font-weight: 700;">Received on</span>
-                            <span class="order-date" style="color: var(--stat-received-text); background: var(--stat-received-bg);">${displayRecDate}</span>
-                        </div>
-                    `;
+                let bHTML = item.status === 'pending' ? `<div class="badge pending">⏳ Pending</div>` 
+                          : item.status === 'partial' ? `<div class="badge partial">⚠️ Partial</div>`
+                          : `<div class="badge received">✅ Received</div>`;
+                
+                let isNew = (item.status === 'received' && item.receivedDate === today) || (item.orderDate === today);
+                let newB = isNew ? `<div class="badge-new">✨ NEW</div>` : "";
+                
+                let lateC = "";
+                if ((item.status === 'pending' || item.status === 'partial') && item.orderDate) {
+                    if((new Date() - new Date(item.orderDate)) / 86400000 > 15) lateC = "late-warning-card";
                 }
 
                 gallery.innerHTML += `
-                    <div class="product-card ${lateClass}">
-                        <div class="img-wrapper">
-                            ${badgeHTML}
-                            ${newBadgeHTML}
-                            <img src="${item.imageURL}" class="product-img" loading="lazy" alt="Clothing Design">
-                        </div>
+                    <div class="product-card ${lateC}">
+                        <div class="img-wrapper">${bHTML}${newB}<img src="${item.imageURL}" class="product-img" loading="lazy"></div>
                         <div class="card-details">
-                            <div class="order-id-row">
-                                <span class="order-id">${shortOrderId}</span>
-                            </div>
-                            <div class="card-title">Garment Design</div>
-                            
-                            <div class="order-id-row" style="margin-top: 10px; margin-bottom: 0;">
-                                <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Order Date</span>
-                                <span class="order-date">${displayOrderDate}</span>
-                            </div>
-                            
-                            ${receivedDateHTML}
-                            ${lateTextHTML}
+                            <span class="order-id">${idStr}</span>
+                            <div style="margin-top:5px;"><span style="font-size:10px;color:#a1a5b7;">Ord Date:</span> <span class="order-date">${oDate}</span></div>
+                            ${(item.status === 'received' && item.receivedDate) ? `<div style="margin-top:5px;"><span style="font-size:10px;color:#50cd89;">Rcv Date:</span> <span class="order-date" style="background:#e8fff3;color:#50cd89;">${new Date(item.receivedDate).toLocaleDateString('en-IN')}</span></div>` : ''}
                         </div>
                     </div>
                 `;
             });
         }
-
-        // Run on load
         fetchData();
     </script>
 </body>
