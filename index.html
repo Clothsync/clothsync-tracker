@@ -465,6 +465,16 @@
             
             let pendingItems = allCloudPhotos.filter(i => i.supplier === supp && (i.status === 'pending' || i.status === 'partial'));
             if(pendingItems.length === 0) { alert("No pending items for this supplier!"); return; }
+// --- PDF Catalogue Generator (Date-Wise Sorted) ---
+        window.downloadPDF = async function() {
+            let supp = document.getElementById('supplierFilter').value;
+            if(supp === 'ALL' || supp === "") { alert("Please select a specific supplier from the dropdown first to generate their PDF."); return; }
+            
+            let pendingItems = allCloudPhotos.filter(i => i.supplier === supp && (i.status === 'pending' || i.status === 'partial'));
+            if(pendingItems.length === 0) { alert("No pending items for this supplier!"); return; }
+
+            // ✅ અહી નવું સોર્ટિંગ એડ કર્યું છે (નવી તારીખ વાળો માલ પહેલા આવશે)
+            pendingItems.sort((a, b) => b.timestamp - a.timestamp);
 
             const btn = document.getElementById('pdfBtn');
             btn.innerText = "⏳ Generating PDF..."; btn.disabled = true;
@@ -489,6 +499,8 @@
                     let ordStr = "#CS-" + pendingItems[i].id.substring(0, 5).toUpperCase();
                     doc.text(`ID: ${ordStr}`, xPos, yPos + 65);
                     doc.text(`Date: ${pendingItems[i].orderDate}`, xPos, yPos + 70);
+                    
+                    // જો માલ Partial હશે તો એ પીળા કલરમાં લખાઈને આવશે
                     if(pendingItems[i].status === 'partial') { doc.setTextColor(214, 158, 46); doc.text(`(Partial)`, xPos, yPos + 75); doc.setTextColor(0,0,0); }
 
                     xPos += 60; if(xPos > 180) { xPos = 15; yPos += 85; }
@@ -497,7 +509,6 @@
             } catch (e) { alert("Error generating PDF"); console.error(e); } 
             finally { btn.innerText = "📄 PDF Catalog"; btn.disabled = false; }
         };
-
         window.copySupplierLink = function() {
             let s = document.getElementById('supplierFilter').value;
             if(s === 'ALL' || !s) { alert("Select Supplier first!"); return; }
