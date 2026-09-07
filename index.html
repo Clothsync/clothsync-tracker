@@ -21,7 +21,6 @@
         .header h1 { margin: 0; font-size: 24px; font-weight: 800; }
         .header p { margin: 5px 0 0 0; font-size: 13px; color: #cbd5e0; font-weight: 500; text-transform: uppercase; }
         
-        /* PWA Install Button */
         #installAppBtn { display: none; position: absolute; top: 15px; right: 15px; background: #ecc94b; color: #744210; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 11px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
 
         .content { padding: 15px; }
@@ -45,6 +44,9 @@
         .btn-action { flex: 1; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; }
         
         .last-seen-badge { font-size: 12px; font-weight: 700; color: var(--accent); text-align: center; display: none; background: #ebf8ff; padding: 6px; border-radius: 6px; border: 1px solid #bee3f8; }
+
+        .date-header { background: #e2e8f0; color: var(--primary); padding: 8px 12px; border-radius: 6px; margin: 15px 0 10px 0; font-size: 13px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+        .date-label-badge { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
 
         .photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .photo-card { position: relative; border-radius: 8px; overflow: hidden; border: 1px solid var(--secondary); background: #000; aspect-ratio: 3/4; }
@@ -148,7 +150,7 @@
                 </div>
             </div>
 
-            <!-- Tabs with Partial Added -->
+            <!-- Tabs -->
             <div class="tabs">
                 <div class="tab-btn active" id="tabPending" onclick="switchTab('pending')">⏳ Pending (<span id="cPending">0</span>)</div>
                 <div class="tab-btn" id="tabPartial" onclick="switchTab('partial')">⚠️ Partial (<span id="cPartial">0</span>)</div>
@@ -208,6 +210,14 @@
         let savedSuppliersList = [];
         let allCloudPhotos = [];
         let currentPage = 1; const itemsPerPage = 20;
+
+        function getLocalDateString() {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
 
         window.onload = async function() {
             if(localStorage.getItem('clothsync_admin_auth') === 'success') {
@@ -289,7 +299,6 @@
             document.getElementById('supplierFilter').innerHTML = html;
         }
 
-        // --- Watermark & Compression ---
         function compressImage(file, supplierName) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -305,7 +314,6 @@
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
                         
-                        // Draw Watermark
                         ctx.font = "bold 24px Inter, Arial";
                         ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
                         ctx.shadowColor = "rgba(0, 0, 0, 0.8)";
@@ -338,7 +346,7 @@
             try {
                 for (let i = 0; i < files.length; i++) {
                     btnText.innerText = `⏳ Uploading (${i+1}/${files.length})...`;
-                    let base64Full = await compressImage(files[i], finalSupplier); // Apply watermark
+                    let base64Full = await compressImage(files[i], finalSupplier);
                     let base64Data = base64Full.split(',')[1];
                     let fileName = `uploads/img_${Date.now()}_${Math.floor(Math.random()*1000)}.jpg`;
                     
@@ -357,7 +365,8 @@
         window.changeStatus = async function(id, newStatus) {
             showLoader(true);
             try {
-                let recDate = newStatus === 'received' ? new Date().toISOString().split('T')[0] : null;
+                // લોકલ ડેટ વાપરો જેથી ટાઈમઝોનની ભૂલ ન થાય
+                let recDate = newStatus === 'received' ? getLocalDateString() : null;
                 await updateDoc(doc(db, "orders", id), { status: newStatus, receivedDate: recDate });
                 let idx = allCloudPhotos.findIndex(item => item.id === id);
                 if(idx !== -1) { allCloudPhotos[idx].status = newStatus; allCloudPhotos[idx].receivedDate = recDate; }
@@ -378,18 +387,17 @@
             }
         };
 
-        // --- Read Receipt logic inside renderGallery ---
+        // --- ગેલરી રેન્ડર અને પરફેક્ટ ડેટ સોર્ટિંગ ---
         window.renderGallery = function() {
             const container = document.getElementById('galleryContainer');
             const paginationDiv = document.getElementById('paginationControls');
             let filterSelect = document.getElementById('supplierFilter').value;
-            let todayStr = new Date().toISOString().split('T')[0];
+            let todayStr = getLocalDateString();
 
             document.getElementById('cPending').innerText = allCloudPhotos.filter(i => i.status === 'pending').length;
             document.getElementById('cPartial').innerText = allCloudPhotos.filter(i => i.status === 'partial').length;
             document.getElementById('cReceived').innerText = allCloudPhotos.filter(i => i.status === 'received').length;
 
-            // Fetch Last Seen for Blue Tick
             const lastSeenBadge = document.getElementById('lastSeenBadge');
             if(filterSelect !== 'ALL') {
                 getDoc(doc(db, "supplier_views", filterSelect)).then(d => {
@@ -405,7 +413,16 @@
 
             if(displayPhotos.length === 0) { container.innerHTML = `<div class="empty-state">No photos found.</div>`; paginationDiv.style.display = "none"; return; }
 
-            displayPhotos.sort((a, b) => b.timestamp - a.timestamp);
+            // ✅ સુધારેલું સોર્ટિંગ: Received માં હોઈએ તો receivedDate થી જ સોર્ટ થશે (લેટેસ્ટ ઉપર)
+            displayPhotos.sort((a, b) => {
+                let dateA = (currentTab === 'received' && a.receivedDate) ? a.receivedDate : (a.orderDate || "");
+                let dateB = (currentTab === 'received' && b.receivedDate) ? b.receivedDate : (b.orderDate || "");
+                
+                if (dateB !== dateA) {
+                    return dateB.localeCompare(dateA); // લેટેસ્ટ તારીખ (07 Sept -> 06 Sept -> 04 Sept -> 03 Sept)
+                }
+                return (b.timestamp || 0) - (a.timestamp || 0);
+            });
 
             let totalPages = Math.ceil(displayPhotos.length / itemsPerPage);
             if(currentPage > totalPages) currentPage = totalPages;
@@ -420,9 +437,16 @@
             
             paginated.forEach(item => {
                 let dateKey = (currentTab === 'received' && item.receivedDate) ? item.receivedDate : (item.orderDate || "No Date");
+                
                 if (dateKey !== lastDate) {
                     let dispD = dateKey === "No Date" ? "Unknown Date" : new Date(dateKey).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
-                    container.innerHTML += `<div class="date-header" style="grid-column:span 2; font-size:12px; font-weight:bold; background:#e2e8f0; padding:5px; border-radius:4px; text-align:center;">📅 ${dispD}</div>`;
+                    let dateLabel = currentTab === 'received' ? "Date Received" : "Order Date";
+                    container.innerHTML += `
+                        <div class="date-header" style="grid-column: span 2;">
+                            <span>📅 ${dispD}</span>
+                            <span class="date-label-badge">${dateLabel}</span>
+                        </div>
+                    `;
                     lastDate = dateKey;
                 }
 
@@ -446,6 +470,8 @@
                     actionBtn = `<div class="btn-row"><button class="btn-status btn-undo" onclick="changeStatus('${item.id}', 'pending')">⏳ Move Pending</button></div>`;
                 }
 
+                let ordFormatted = item.orderDate ? new Date(item.orderDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
+
                 container.innerHTML += `
                     <div class="photo-card ${lateClass}">
                         <div class="badge-supplier">${item.supplier}</div>
@@ -454,7 +480,7 @@
                         <button class="btn-delete" onclick="deletePhoto('${item.id}')">X</button>
                         <div class="action-bar">
                             ${lateText}
-                            <div class="original-date">Ord: ${item.orderDate || ''}</div>
+                            <div style="color: #cbd5e0; font-size: 10px; text-align: center; margin-bottom: 1px; font-weight: 600;">Ord: ${ordFormatted}</div>
                             ${actionBtn}
                         </div>
                     </div>
@@ -470,7 +496,6 @@
             let pendingItems = allCloudPhotos.filter(i => i.supplier === supp && (i.status === 'pending' || i.status === 'partial'));
             if(pendingItems.length === 0) { alert("No pending items for this supplier!"); return; }
 
-            // ✅ અહી સોર્ટિંગ એડ કરેલું છે 
             pendingItems.sort((a, b) => b.timestamp - a.timestamp);
 
             const btn = document.getElementById('pdfBtn');
@@ -491,7 +516,7 @@
                     
                     if(yPos > 240) { doc.addPage(); yPos = 20; xPos = 15; }
                     
-                    doc.addImage(dataUrl, 'JPEG', xPos, yPos, 45, 60); // 3:4 aspect
+                    doc.addImage(dataUrl, 'JPEG', xPos, yPos, 45, 60);
                     doc.setFontSize(10);
                     let ordStr = "#CS-" + pendingItems[i].id.substring(0, 5).toUpperCase();
                     doc.text(`ID: ${ordStr}`, xPos, yPos + 65);
@@ -519,7 +544,7 @@
             if(filterSelect !== 'ALL') { filteredPhotos = filteredPhotos.filter(item => item.supplier === filterSelect); }
             if (filteredPhotos.length === 0) { alert("No photos to share!"); return; }
 
-            const shareBtn = document.getElementById('shareBtn');
+            const shareBtn = document.querySelector('.btn-action[onclick="sharePhotos()"]');
             const originalText = shareBtn.innerText;
             shareBtn.innerText = "⏳ Prep...";
             shareBtn.disabled = true;
