@@ -4,15 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Cloth.sync | Admin Dashboard</title>
-    <!-- PWA Setup (App Install) -->
     <link id="manifestLink" rel="manifest" href="">
     <meta name="theme-color" content="#1a365d">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- jsPDF for Catalogue -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <style>
-        :root { --primary: #1a365d; --secondary: #e2e8f0; --accent: #3182ce; --danger: #e53e3e; --success: #38a169; --warning: #d69e2e; --text-main: #2d3748; --text-muted: #718096; --bg-body: #f7fafc; --bg-card: #ffffff; }
+        :root { --primary: #1a365d; --secondary: #e2e8f0; --accent: #3182ce; --danger: #e53e3e; --success: #38a169; --cancel: #718096; --text-main: #2d3748; --text-muted: #718096; --bg-body: #f7fafc; --bg-card: #ffffff; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg-body); color: var(--text-main); padding: 10px; display: flex; justify-content: center; }
 
@@ -35,7 +33,7 @@
         .file-upload-wrapper input[type="file"] { font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; height: 100%; }
 
         .tabs { display: flex; gap: 5px; margin-bottom: 15px; }
-        .tab-btn { flex: 1; padding: 10px 5px; text-align: center; font-weight: 700; font-size: 13px; border-radius: 6px; cursor: pointer; border: 1px solid var(--secondary); background: #f8fafc; color: var(--text-main); }
+        .tab-btn { flex: 1; padding: 10px 5px; text-align: center; font-weight: 700; font-size: 12px; border-radius: 6px; cursor: pointer; border: 1px solid var(--secondary); background: #f8fafc; color: var(--text-main); }
         .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
         .filter-wrapper { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid var(--secondary); }
@@ -63,7 +61,7 @@
         .btn-row { display: flex; gap: 4px; width: 100%; }
         .btn-status { flex: 1; padding: 6px 2px; border: none; border-radius: 4px; font-size: 10px; font-weight: 700; cursor: pointer; text-align: center; color: white; }
         .btn-receive { background: var(--success); }
-        .btn-partial { background: var(--warning); }
+        .btn-cancel { background: var(--cancel); }
         .btn-undo { background: #4a5568; }
         .btn-delete { position: absolute; top: 5px; right: 5px; background: rgba(229, 62, 62, 0.9); color: white; border: none; width: 25px; height: 25px; border-radius: 50%; font-size: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 2; }
 
@@ -150,10 +148,10 @@
                 </div>
             </div>
 
-            <!-- Tabs -->
+            <!-- Modified Tabs -->
             <div class="tabs">
                 <div class="tab-btn active" id="tabPending" onclick="switchTab('pending')">⏳ Pending (<span id="cPending">0</span>)</div>
-                <div class="tab-btn" id="tabPartial" onclick="switchTab('partial')">⚠️ Partial (<span id="cPartial">0</span>)</div>
+                <div class="tab-btn" id="tabCancelled" onclick="switchTab('cancelled')">🚫 Cancelled (<span id="cCancelled">0</span>)</div>
                 <div class="tab-btn" id="tabReceived" onclick="switchTab('received')">✅ Received (<span id="cReceived">0</span>)</div>
             </div>
 
@@ -231,11 +229,11 @@
         window.switchTab = function(tabName) {
             currentTab = tabName; currentPage = 1;
             document.getElementById('tabPending').classList.remove('active');
-            document.getElementById('tabPartial').classList.remove('active');
+            document.getElementById('tabCancelled').classList.remove('active');
             document.getElementById('tabReceived').classList.remove('active');
             
             if(tabName === 'pending') document.getElementById('tabPending').classList.add('active');
-            else if(tabName === 'partial') document.getElementById('tabPartial').classList.add('active');
+            else if(tabName === 'cancelled') document.getElementById('tabCancelled').classList.add('active');
             else document.getElementById('tabReceived').classList.add('active');
             renderGallery();
         };
@@ -365,7 +363,6 @@
         window.changeStatus = async function(id, newStatus) {
             showLoader(true);
             try {
-                // લોકલ ડેટ વાપરો જેથી ટાઈમઝોનની ભૂલ ન થાય
                 let recDate = newStatus === 'received' ? getLocalDateString() : null;
                 await updateDoc(doc(db, "orders", id), { status: newStatus, receivedDate: recDate });
                 let idx = allCloudPhotos.findIndex(item => item.id === id);
@@ -387,7 +384,6 @@
             }
         };
 
-        // --- ગેલરી રેન્ડર અને પરફેક્ટ ડેટ સોર્ટિંગ ---
         window.renderGallery = function() {
             const container = document.getElementById('galleryContainer');
             const paginationDiv = document.getElementById('paginationControls');
@@ -395,7 +391,7 @@
             let todayStr = getLocalDateString();
 
             document.getElementById('cPending').innerText = allCloudPhotos.filter(i => i.status === 'pending').length;
-            document.getElementById('cPartial').innerText = allCloudPhotos.filter(i => i.status === 'partial').length;
+            document.getElementById('cCancelled').innerText = allCloudPhotos.filter(i => i.status === 'cancelled').length;
             document.getElementById('cReceived').innerText = allCloudPhotos.filter(i => i.status === 'received').length;
 
             const lastSeenBadge = document.getElementById('lastSeenBadge');
@@ -413,14 +409,10 @@
 
             if(displayPhotos.length === 0) { container.innerHTML = `<div class="empty-state">No photos found.</div>`; paginationDiv.style.display = "none"; return; }
 
-            // ✅ સુધારેલું સોર્ટિંગ: Received માં હોઈએ તો receivedDate થી જ સોર્ટ થશે (લેટેસ્ટ ઉપર)
             displayPhotos.sort((a, b) => {
                 let dateA = (currentTab === 'received' && a.receivedDate) ? a.receivedDate : (a.orderDate || "");
                 let dateB = (currentTab === 'received' && b.receivedDate) ? b.receivedDate : (b.orderDate || "");
-                
-                if (dateB !== dateA) {
-                    return dateB.localeCompare(dateA); // લેટેસ્ટ તારીખ (07 Sept -> 06 Sept -> 04 Sept -> 03 Sept)
-                }
+                if (dateB !== dateA) return dateB.localeCompare(dateA); 
                 return (b.timestamp || 0) - (a.timestamp || 0);
             });
 
@@ -452,18 +444,18 @@
 
                 let newBadge = (dateKey === todayStr) ? `<div class="badge-new">✨ NEW</div>` : "";
                 let lateClass = "", lateText = "";
-                if ((currentTab === 'pending' || currentTab === 'partial') && item.orderDate) {
+                if (currentTab === 'pending' && item.orderDate) {
                     if ((new Date() - new Date(item.orderDate)) / 86400000 > 15) {
                         lateClass = "late-warning-card"; lateText = `<div class="late-text">⚠️ 15+ Days Late</div>`;
                     }
                 }
 
                 let actionBtn = "";
-                if(currentTab === 'pending' || currentTab === 'partial') {
+                if(currentTab === 'pending') {
                     actionBtn = `
                         <div class="btn-row">
                             <button class="btn-status btn-receive" onclick="changeStatus('${item.id}', 'received')">✅ Rcvd</button>
-                            ${currentTab === 'pending' ? `<button class="btn-status btn-partial" onclick="changeStatus('${item.id}', 'partial')">⚠️ Half</button>` : ''}
+                            <button class="btn-status btn-cancel" onclick="changeStatus('${item.id}', 'cancelled')">🚫 Cancel</button>
                         </div>
                     `;
                 } else {
@@ -488,12 +480,13 @@
             });
         };
 
-        // --- PDF Catalogue Generator (Date-Wise Sorted) ---
+        // --- PDF Catalogue Generator (Pending Only) ---
         window.downloadPDF = async function() {
             let supp = document.getElementById('supplierFilter').value;
             if(supp === 'ALL' || supp === "") { alert("Please select a specific supplier from the dropdown first to generate their PDF."); return; }
             
-            let pendingItems = allCloudPhotos.filter(i => i.supplier === supp && (i.status === 'pending' || i.status === 'partial'));
+            // ✅ Only taking pending items for PDF
+            let pendingItems = allCloudPhotos.filter(i => i.supplier === supp && i.status === 'pending');
             if(pendingItems.length === 0) { alert("No pending items for this supplier!"); return; }
 
             pendingItems.sort((a, b) => b.timestamp - a.timestamp);
@@ -506,7 +499,7 @@
                 doc.setFont("helvetica", "bold"); doc.setFontSize(22); doc.text("Cloth.sync - Pending Catalogue", 15, 20);
                 doc.setFontSize(14); doc.setFont("helvetica", "normal");
                 doc.text(`Supplier: ${supp}`, 15, 30); doc.text(`Date Generated: ${new Date().toLocaleDateString('en-IN')}`, 15, 38);
-                doc.text(`Total Pending/Partial Designs: ${pendingItems.length}`, 15, 46);
+                doc.text(`Total Pending Designs: ${pendingItems.length}`, 15, 46);
                 doc.line(15, 50, 195, 50);
 
                 let yPos = 60; let xPos = 15;
@@ -521,8 +514,6 @@
                     let ordStr = "#CS-" + pendingItems[i].id.substring(0, 5).toUpperCase();
                     doc.text(`ID: ${ordStr}`, xPos, yPos + 65);
                     doc.text(`Date: ${pendingItems[i].orderDate}`, xPos, yPos + 70);
-                    
-                    if(pendingItems[i].status === 'partial') { doc.setTextColor(214, 158, 46); doc.text(`(Partial)`, xPos, yPos + 75); doc.setTextColor(0,0,0); }
 
                     xPos += 60; if(xPos > 180) { xPos = 15; yPos += 85; }
                 }
