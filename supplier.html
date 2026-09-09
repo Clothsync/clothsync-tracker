@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
-        :root { --primary: #1e1e2d; --bg-main: #f5f8fa; --card-bg: #ffffff; --text-dark: #181c32; --text-muted: #a1a5b7; --border-light: #eff2f5; --stat-pending-bg: #fff5f8; --stat-pending-text: #f1416c; --stat-received-bg: #e8fff3; --stat-received-text: #50cd89; --stat-partial-bg: #fff8e1; --stat-partial-text: #f57f17; }
+        :root { --primary: #1e1e2d; --bg-main: #f5f8fa; --card-bg: #ffffff; --text-dark: #181c32; --text-muted: #a1a5b7; --border-light: #eff2f5; --stat-pending-bg: #fff5f8; --stat-pending-text: #f1416c; --stat-received-bg: #e8fff3; --stat-received-text: #50cd89; --stat-cancel-bg: #f8f9fa; --stat-cancel-text: #718096; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg-main); color: var(--text-dark); }
         
@@ -28,7 +28,7 @@
         .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 25px; }
         .stat-card { padding: 15px; border-radius: 12px; border: 1px solid var(--border-light); text-align: center; background: white; }
         .stat-card.pending .stat-value { color: var(--stat-pending-text); }
-        .stat-card.partial .stat-value { color: var(--stat-partial-text); }
+        .stat-card.cancelled .stat-value { color: var(--stat-cancel-text); }
         .stat-card.received .stat-value { color: var(--stat-received-text); }
         .stat-title { font-size: 12px; font-weight: 600; color: var(--text-muted); }
         .stat-value { font-size: 24px; font-weight: 800; }
@@ -44,7 +44,7 @@
         
         .badge { position: absolute; top: 10px; left: 10px; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; color: white; }
         .badge.pending { background: #ff9800; }
-        .badge.partial { background: var(--stat-partial-text); }
+        .badge.cancelled { background: var(--stat-cancel-text); }
         .badge.received { background: var(--stat-received-text); }
 
         @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
@@ -97,7 +97,7 @@
 
         <div class="stats-grid" id="statsSection" style="display: none;">
             <div class="stat-card pending"><div class="stat-title">Pending</div><div class="stat-value" id="vPend">0</div></div>
-            <div class="stat-card partial"><div class="stat-title">Partial</div><div class="stat-value" id="vPart">0</div></div>
+            <div class="stat-card cancelled"><div class="stat-title">Cancelled</div><div class="stat-value" id="vCancel">0</div></div>
             <div class="stat-card received"><div class="stat-title">Received</div><div class="stat-value" id="vRec">0</div></div>
             <div class="stat-card total"><div class="stat-title">Total</div><div class="stat-value" id="vTot">0</div></div>
         </div>
@@ -105,7 +105,7 @@
         <div class="tabs-container" id="tabSection" style="display: none;">
             <div class="tab-item active" id="tabAll" onclick="switchTab('all')">All Orders</div>
             <div class="tab-item" id="tabPending" onclick="switchTab('pending')">Pending</div>
-            <div class="tab-item" id="tabPartial" onclick="switchTab('partial')">Partial</div>
+            <div class="tab-item" id="tabCancelled" onclick="switchTab('cancelled')">Cancelled</div>
             <div class="tab-item" id="tabReceived" onclick="switchTab('received')">Received</div>
         </div>
 
@@ -135,7 +135,7 @@
 
         window.switchTab = function(tab) {
             currentTab = tab; currentPage = 1;
-            ['tabAll','tabPending','tabPartial','tabReceived'].forEach(t => document.getElementById(t).classList.remove('active'));
+            ['tabAll','tabPending','tabCancelled','tabReceived'].forEach(t => document.getElementById(t).classList.remove('active'));
             document.getElementById(tab === 'all' ? 'tabAll' : 'tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
             renderPhotos();
         };
@@ -148,10 +148,8 @@
             document.getElementById('headerSupplierName').innerText = targetSupplier;
             
             try {
-                // 1. Update Read Receipt (Last Seen) for Admin
                 await setDoc(doc(db, "supplier_views", targetSupplier), { lastSeen: Date.now() });
 
-                // 2. Fetch Photos
                 const q = query(collection(db, "orders"), where("supplier", "==", targetSupplier));
                 const querySnapshot = await getDocs(q);
                 querySnapshot.forEach(doc => allPhotos.push({ id: doc.id, ...doc.data() }));
@@ -162,7 +160,7 @@
                 
                 document.getElementById('vTot').innerText = allPhotos.length;
                 document.getElementById('vPend').innerText = allPhotos.filter(i => i.status === 'pending').length;
-                document.getElementById('vPart').innerText = allPhotos.filter(i => i.status === 'partial').length;
+                document.getElementById('vCancel').innerText = allPhotos.filter(i => i.status === 'cancelled').length;
                 document.getElementById('vRec').innerText = allPhotos.filter(i => i.status === 'received').length;
 
                 renderPhotos();
@@ -199,14 +197,14 @@
                 let idStr = "#CS-" + item.id.substring(0, 6).toUpperCase(); 
                 
                 let bHTML = item.status === 'pending' ? `<div class="badge pending">⏳ Pending</div>` 
-                          : item.status === 'partial' ? `<div class="badge partial">⚠️ Partial</div>`
+                          : item.status === 'cancelled' ? `<div class="badge cancelled">🚫 Cancelled</div>`
                           : `<div class="badge received">✅ Received</div>`;
                 
                 let isNew = (item.status === 'received' && item.receivedDate === today) || (item.orderDate === today);
                 let newB = isNew ? `<div class="badge-new">✨ NEW</div>` : "";
                 
                 let lateC = "";
-                if ((item.status === 'pending' || item.status === 'partial') && item.orderDate) {
+                if (item.status === 'pending' && item.orderDate) {
                     if((new Date() - new Date(item.orderDate)) / 86400000 > 15) lateC = "late-warning-card";
                 }
 
